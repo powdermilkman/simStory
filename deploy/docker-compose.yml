@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_REPO: https://github.com/yourusername/simulationStory.git
+        GITHUB_BRANCH: main
+    container_name: simulationstory-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_KEY=${APP_KEY}
+      - APP_URL=${APP_URL:-http://localhost:8080}
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=${DB_DATABASE:-simulationstory}
+      - DB_USERNAME=${DB_USERNAME:-simulationstory}
+      - DB_PASSWORD=${DB_PASSWORD:-secret_password_change_me}
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - simulationstory
+
+  db:
+    image: mysql:8.0
+    container_name: simulationstory-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-simulationstory}
+      MYSQL_USER: ${DB_USERNAME:-simulationstory}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret_password_change_me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password_change_me}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - simulationstory
+
+  redis:
+    image: redis:7-alpine
+    container_name: simulationstory-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    networks:
+      - simulationstory
+
+networks:
+  simulationstory:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local

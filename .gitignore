@@ -1,0 +1,54 @@
+# Laravel
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# IDE
+/.fleet
+/.idea
+/.vscode
+/.nova
+/.zed
+.phpactor.json
+/.phpunit.cache
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Storage - keep directory structure but ignore contents
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/app/public/*
+!/storage/app/public/.gitkeep
+
+# Bootstrap cache - keep directory but ignore compiled files
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+
+# Docker volumes (if running locally)
+# These are populated by Docker containers
+# Uncomment if you experience issues with local Docker volumes
+# /storage/
+# /bootstrap/cache/
