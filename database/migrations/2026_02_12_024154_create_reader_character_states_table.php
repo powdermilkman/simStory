@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('reader_id')->constrained()->onDelete('cascade');
             $table->foreignId('character_id')->constrained()->onDelete('cascade');
-            $table->json('overrides')->default('{}');
+            $table->json('overrides')->nullable();
             $table->timestamps();
 
             $table->unique(['reader_id', 'character_id']);
