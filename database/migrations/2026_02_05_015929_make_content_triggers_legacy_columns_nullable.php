@@ -15,9 +15,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // SQLite doesn't support modifying columns directly, so we need to recreate the table
-        Schema::table('content_triggers', function (Blueprint $table) {
-            // For SQLite, we'll create a new table with the correct schema
+        // Drop foreign keys that reference content_triggers
+        Schema::table('threads', function (Blueprint $table) {
+            $table->dropForeign(['required_trigger_id']);
+        });
+
+        Schema::table('posts', function (Blueprint $table) {
+            $table->dropForeign(['required_trigger_id']);
+        });
+
+        Schema::table('private_messages', function (Blueprint $table) {
+            $table->dropForeign(['required_trigger_id']);
         });
 
         // Create a temporary table with the correct schema
@@ -53,6 +61,19 @@ return new class extends Migration
         // Drop old table and rename new table
         Schema::dropIfExists('content_triggers');
         Schema::rename('content_triggers_new', 'content_triggers');
+
+        // Recreate the foreign keys
+        Schema::table('threads', function (Blueprint $table) {
+            $table->foreign('required_trigger_id')->references('id')->on('content_triggers')->onDelete('set null');
+        });
+
+        Schema::table('posts', function (Blueprint $table) {
+            $table->foreign('required_trigger_id')->references('id')->on('content_triggers')->onDelete('set null');
+        });
+
+        Schema::table('private_messages', function (Blueprint $table) {
+            $table->foreign('required_trigger_id')->references('id')->on('content_triggers')->onDelete('set null');
+        });
     }
 
     /**
