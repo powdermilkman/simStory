@@ -48,6 +48,10 @@ RUN cp .env.example .env
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Generate application key and fix .env ownership
+RUN php artisan key:generate --force \
+    && chown www-data:www-data /var/www/.env
+
 # Install npm dependencies and build assets
 RUN npm ci && npm run build && npm cache clean --force
 
