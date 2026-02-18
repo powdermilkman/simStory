@@ -13,15 +13,20 @@ Deploy SimulationStory in 3 easy steps! The app will be pulled directly from Git
 ### 1. Copy files to your server
 
 Copy these files to your server:
-- `docker-compose.yml`
+- `docker compose.yml`
 - `Dockerfile`
 - `.env.example`
+- `setup.sh` (optional - for automated setup)
+- `update.sh` (optional - for automated updates)
 
 Or use this one-liner:
 ```bash
-wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/docker-compose.yml
+wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/docker compose.yml
 wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/Dockerfile
 wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/.env.example
+wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/setup.sh
+wget https://raw.githubusercontent.com/yourusername/simulationStory/main/deploy/update.sh
+chmod +x setup.sh update.sh
 ```
 
 ### 2. Configure environment
@@ -42,27 +47,27 @@ nano .env
 
 ```bash
 # Build and start (first time - takes a few minutes as it clones from GitHub)
-docker-compose up -d --build
+docker compose up -d --build
 
 # Wait for database to initialize (about 30 seconds)
 sleep 30
 
 # Generate application key
-docker-compose exec app php artisan key:generate
+docker compose exec app php artisan key:generate
 
 # Run migrations
-docker-compose exec app php artisan migrate --force
+docker compose exec app php artisan migrate --force
 
 # Seed the database
-docker-compose exec app php artisan db:seed --force
+docker compose exec app php artisan db:seed --force
 
 # Optimize for production
-docker-compose exec app php artisan config:cache
-docker-compose exec app php artisan route:cache
-docker-compose exec app php artisan view:cache
+docker compose exec app php artisan config:cache
+docker compose exec app php artisan route:cache
+docker compose exec app php artisan view:cache
 
 # Create storage link
-docker-compose exec app php artisan storage:link
+docker compose exec app php artisan storage:link
 ```
 
 ### 4. Access your site
@@ -79,31 +84,31 @@ Admin panel: http://localhost:8080/admin
 
 ### Change admin password
 ```bash
-docker-compose exec app php artisan admin:password admin@example.com
+docker compose exec app php artisan admin:password admin@example.com
 ```
 
 ### Create a new admin user
 ```bash
-docker-compose exec app php artisan admin:create
+docker compose exec app php artisan admin:create
 # Or with options:
-docker-compose exec app php artisan admin:create --email=newemail@example.com --name="New Admin"
+docker compose exec app php artisan admin:create --email=newemail@example.com --name="New Admin"
 ```
 
 ### List all admin users
 ```bash
-docker-compose exec app php artisan admin:list
+docker compose exec app php artisan admin:list
 ```
 
 ### Delete an admin user
 ```bash
-docker-compose exec app php artisan admin:delete user@example.com
+docker compose exec app php artisan admin:delete user@example.com
 ```
 
 ## Customization
 
 ### Use a different GitHub repo or branch
 
-Edit `docker-compose.yml` and change:
+Edit `docker compose.yml` and change:
 ```yaml
 args:
   GITHUB_REPO: https://github.com/YOUR_USERNAME/YOUR_REPO.git
@@ -112,7 +117,7 @@ args:
 
 ### Change the port
 
-Edit `docker-compose.yml`:
+Edit `docker compose.yml`:
 ```yaml
 ports:
   - "8080:80"  # Change 8080 to your preferred port
@@ -120,46 +125,74 @@ ports:
 
 ## Updates
 
-To update to the latest code from GitHub:
+### Quick Update (Recommended)
+
+Use the update script to automatically get the latest code:
 
 ```bash
-# Rebuild with latest code
-docker-compose down
-docker-compose up -d --build
+./update.sh
+```
+
+This will:
+- Pull latest code from GitHub
+- Rebuild containers
+- Run migrations
+- Clear and rebuild caches
+
+### Manual Update
+
+To update manually:
+
+```bash
+# Rebuild with latest code from GitHub
+docker compose down
+docker compose build --no-cache app
+docker compose up -d
+
+# Wait for database
+sleep 10
 
 # Run new migrations (if any)
-docker-compose exec app php artisan migrate --force
+docker compose exec app php artisan migrate --force
 
 # Clear caches
-docker-compose exec app php artisan config:cache
-docker-compose exec app php artisan route:cache
-docker-compose exec app php artisan view:cache
+docker compose exec app php artisan config:cache
+docker compose exec app php artisan route:cache
+docker compose exec app php artisan view:cache
+```
+
+### Check for Updates
+
+See what's new without applying updates:
+
+```bash
+docker compose exec app php artisan app:check-updates
 ```
 
 ## Common Commands
 
 ```bash
 # View logs
-docker-compose logs -f app
+docker compose logs -f app
 
 # Restart
-docker-compose restart
+docker compose restart
 
 # Stop
-docker-compose down
+docker compose down
 
 # Run artisan command
-docker-compose exec app php artisan [command]
+docker compose exec app php artisan [command]
 
 # Access database
-docker-compose exec db mysql -u simulationstory -p
+docker compose exec db mysql -u simulationstory -p
 ```
 
 ## Backup
 
 ```bash
 # Backup database
-docker-compose exec db mysqldump -u simulationstory -p simulationstory > backup.sql
+docker compose exec db mysqldump -u simulationstory -p simulationstory > backup.sql
 
 # Backup uploads
 tar -czf storage-backup.tar.gz storage/
@@ -183,7 +216,7 @@ For production deployment:
 
 **Container won't start:**
 ```bash
-docker-compose logs app
+docker compose logs app
 ```
 
 **Database connection error:**
@@ -192,13 +225,13 @@ docker-compose logs app
 
 **Permission errors:**
 ```bash
-docker-compose exec app chown -R www-data:www-data storage bootstrap/cache
-docker-compose exec app chmod -R 755 storage bootstrap/cache
+docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+docker compose exec app chmod -R 755 storage bootstrap/cache
 ```
 
 **Clear everything and start fresh:**
 ```bash
-docker-compose down -v
-docker-compose up -d --build
+docker compose down -v
+docker compose up -d --build
 # Then repeat step 3 (migrations, seeding, etc.)
 ```
