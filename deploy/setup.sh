@@ -45,9 +45,10 @@ docker compose up -d --build
 
 echo ""
 echo "Waiting for database to initialize..."
-echo "This may take up to 60 seconds..."
+echo "This may take up to 90 seconds..."
 
-# Wait for database to be ready
+# Wait for MySQL to be running
+echo -n "Waiting for MySQL daemon"
 MAX_TRIES=30
 COUNTER=0
 until docker compose exec -T db mysqladmin ping -h localhost --silent >/dev/null 2>&1; do
@@ -56,13 +57,29 @@ until docker compose exec -T db mysqladmin ping -h localhost --silent >/dev/null
     COUNTER=$((COUNTER + 1))
     if [ $COUNTER -eq $MAX_TRIES ]; then
         echo ""
-        echo "❌ Database failed to start after 60 seconds"
+        echo "❌ MySQL failed to start after 60 seconds"
         exit 1
     fi
 done
+echo " ready!"
+
+# Wait for database to be accessible
+echo -n "Waiting for database to accept connections"
+COUNTER=0
+until docker compose exec -T app php -r "new PDO('mysql:host=db;port=3306;dbname=simulationstory', 'simulationstory', getenv('DB_PASSWORD') ?: 'secret_password_change_me');" >/dev/null 2>&1; do
+    echo -n "."
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+        echo ""
+        echo "❌ Database failed to become accessible after 60 seconds"
+        exit 1
+    fi
+done
+echo " ready!"
 
 echo ""
-echo "Database is ready!"
+echo "Database is fully ready!"
 
 echo ""
 echo "Generating application key..."
