@@ -20,6 +20,25 @@ if [ ! -f .env ]; then
     fi
 fi
 
+# Create local storage directory structure for Docker volumes
+echo ""
+echo "Creating local storage directories..."
+mkdir -p storage/framework/{sessions,views,cache,testing}
+mkdir -p storage/logs
+mkdir -p storage/app/public
+mkdir -p bootstrap/cache
+
+# Create .gitkeep files to maintain structure
+touch storage/framework/sessions/.gitkeep
+touch storage/framework/views/.gitkeep
+touch storage/framework/cache/.gitkeep
+touch storage/framework/testing/.gitkeep
+touch storage/logs/.gitkeep
+touch storage/app/public/.gitkeep
+touch bootstrap/cache/.gitkeep
+
+chmod -R 775 storage bootstrap/cache
+
 echo ""
 echo "Building containers (this may take a few minutes on first run)..."
 docker compose up -d --build
