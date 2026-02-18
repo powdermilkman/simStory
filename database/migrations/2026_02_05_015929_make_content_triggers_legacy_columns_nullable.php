@@ -15,11 +15,35 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop foreign keys that reference content_triggers using explicit constraint names
-        DB::statement('ALTER TABLE threads DROP FOREIGN KEY threads_required_trigger_id_foreign');
-        DB::statement('ALTER TABLE posts DROP FOREIGN KEY posts_required_trigger_id_foreign');
-        DB::statement('ALTER TABLE private_messages DROP FOREIGN KEY private_messages_required_trigger_id_foreign');
-        DB::statement('ALTER TABLE trigger_conditions DROP FOREIGN KEY trigger_conditions_content_trigger_id_foreign');
+        // Helper function to check if a foreign key exists
+        $foreignKeyExists = function($table, $constraint) {
+            $result = DB::select("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = ?
+                AND CONSTRAINT_NAME = ?
+                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+            ", [$table, $constraint]);
+            return count($result) > 0;
+        };
+
+        // Drop foreign keys that reference content_triggers (only if they exist)
+        if ($foreignKeyExists('threads', 'threads_required_trigger_id_foreign')) {
+            DB::statement('ALTER TABLE threads DROP FOREIGN KEY threads_required_trigger_id_foreign');
+        }
+        if ($foreignKeyExists('posts', 'posts_required_trigger_id_foreign')) {
+            DB::statement('ALTER TABLE posts DROP FOREIGN KEY posts_required_trigger_id_foreign');
+        }
+        if ($foreignKeyExists('private_messages', 'private_messages_required_trigger_id_foreign')) {
+            DB::statement('ALTER TABLE private_messages DROP FOREIGN KEY private_messages_required_trigger_id_foreign');
+        }
+        if ($foreignKeyExists('trigger_conditions', 'trigger_conditions_content_trigger_id_foreign')) {
+            DB::statement('ALTER TABLE trigger_conditions DROP FOREIGN KEY trigger_conditions_content_trigger_id_foreign');
+        }
+
+        // Drop the temporary table if it exists from a previous failed run
+        Schema::dropIfExists('content_triggers_new');
 
         // Create a temporary table with the correct schema
         Schema::create('content_triggers_new', function (Blueprint $table) {
