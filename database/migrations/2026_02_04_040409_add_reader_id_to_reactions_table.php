@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First drop the foreign key constraint on character_id
+        // Drop all foreign keys first
         Schema::table('reactions', function (Blueprint $table) {
+            $table->dropForeign(['post_id']);
             $table->dropForeign(['character_id']);
         });
 
@@ -30,8 +31,9 @@ return new class extends Migration
                 ->constrained()->onDelete('cascade');
         });
 
-        // Recreate the foreign key on character_id
+        // Recreate the foreign keys
         Schema::table('reactions', function (Blueprint $table) {
+            $table->foreign('post_id')->references('id')->on('posts')->onDelete('cascade');
             $table->foreign('character_id')->references('id')->on('characters')->onDelete('cascade');
         });
 
