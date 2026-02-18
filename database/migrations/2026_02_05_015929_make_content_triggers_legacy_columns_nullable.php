@@ -15,18 +15,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop foreign keys that reference content_triggers
-        Schema::table('threads', function (Blueprint $table) {
-            $table->dropForeign(['required_trigger_id']);
-        });
-
-        Schema::table('posts', function (Blueprint $table) {
-            $table->dropForeign(['required_trigger_id']);
-        });
-
-        Schema::table('private_messages', function (Blueprint $table) {
-            $table->dropForeign(['required_trigger_id']);
-        });
+        // Drop foreign keys that reference content_triggers using explicit constraint names
+        DB::statement('ALTER TABLE threads DROP FOREIGN KEY threads_required_trigger_id_foreign');
+        DB::statement('ALTER TABLE posts DROP FOREIGN KEY posts_required_trigger_id_foreign');
+        DB::statement('ALTER TABLE private_messages DROP FOREIGN KEY private_messages_required_trigger_id_foreign');
+        DB::statement('ALTER TABLE trigger_conditions DROP FOREIGN KEY trigger_conditions_content_trigger_id_foreign');
 
         // Create a temporary table with the correct schema
         Schema::create('content_triggers_new', function (Blueprint $table) {
@@ -73,6 +66,10 @@ return new class extends Migration
 
         Schema::table('private_messages', function (Blueprint $table) {
             $table->foreign('required_trigger_id')->references('id')->on('content_triggers')->onDelete('set null');
+        });
+
+        Schema::table('trigger_conditions', function (Blueprint $table) {
+            $table->foreign('content_trigger_id')->references('id')->on('content_triggers')->onDelete('cascade');
         });
     }
 
