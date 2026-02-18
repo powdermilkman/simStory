@@ -48,7 +48,20 @@ docker compose up -d
 # Wait for database
 echo ""
 echo "→ Waiting for database to be ready..."
-sleep 10
+echo -n "Checking database connection"
+MAX_TRIES=60
+COUNTER=0
+until docker compose exec -T app php -r "new PDO('mysql:host=db;port=3306;dbname=simulationstory', 'simulationstory', getenv('DB_PASSWORD') ?: 'secret_password_change_me');" >/dev/null 2>&1; do
+    echo -n "."
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+        echo ""
+        echo "❌ Database not accessible after 120 seconds"
+        exit 1
+    fi
+done
+echo " ready!"
 
 # Run migrations
 echo ""

@@ -31,8 +31,8 @@ ARG GITHUB_BRANCH=main
 
 # Clone to temporary directory and move to /var/www
 RUN git clone --branch ${GITHUB_BRANCH} ${GITHUB_REPO} /tmp/app \
-    && rm -rf /var/www/* \
-    && mv /tmp/app/* /tmp/app/.[!.]* /var/www/ 2>/dev/null || mv /tmp/app/* /var/www/ \
+    && rm -rf /var/www/html \
+    && cp -r /tmp/app/. /var/www/ \
     && rm -rf /tmp/app \
     && chown -R www-data:www-data /var/www
 
@@ -61,8 +61,11 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
 
-# Copy configurations from the cloned repo
-RUN cp /var/www/docker/nginx/default.conf /etc/nginx/sites-available/default \
+# Set up nginx and supervisor
+RUN mkdir -p /var/log/supervisor /var/log/nginx \
+    && cp /var/www/docker/nginx/default.conf /etc/nginx/sites-available/default \
+    && rm -f /etc/nginx/sites-enabled/default \
+    && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default \
     && cp /var/www/docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose port 80
