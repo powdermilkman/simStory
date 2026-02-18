@@ -11,7 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // First drop the unique constraint that uses character_id
+        // First drop the foreign key constraint on character_id
+        Schema::table('reactions', function (Blueprint $table) {
+            $table->dropForeign(['character_id']);
+        });
+
+        // Then drop the unique constraint that uses character_id
         Schema::table('reactions', function (Blueprint $table) {
             $table->dropUnique(['post_id', 'character_id', 'type']);
         });
@@ -19,17 +24,22 @@ return new class extends Migration
         Schema::table('reactions', function (Blueprint $table) {
             // Make character_id nullable for reader reactions
             $table->foreignId('character_id')->nullable()->change();
-            
+
             // Add reader_id for reader reactions
             $table->foreignId('reader_id')->nullable()->after('character_id')
                 ->constrained()->onDelete('cascade');
+        });
+
+        // Recreate the foreign key on character_id
+        Schema::table('reactions', function (Blueprint $table) {
+            $table->foreign('character_id')->references('id')->on('characters')->onDelete('cascade');
         });
 
         // Add new unique constraints
         Schema::table('reactions', function (Blueprint $table) {
             // Unique constraint for character reactions
             $table->unique(['post_id', 'character_id', 'type'], 'reactions_character_unique');
-            // Unique constraint for reader reactions  
+            // Unique constraint for reader reactions
             $table->unique(['post_id', 'reader_id', 'type'], 'reactions_reader_unique');
         });
     }
