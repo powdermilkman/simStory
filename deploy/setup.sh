@@ -45,7 +45,24 @@ docker compose up -d --build
 
 echo ""
 echo "Waiting for database to initialize..."
-sleep 30
+echo "This may take up to 60 seconds..."
+
+# Wait for database to be ready
+MAX_TRIES=30
+COUNTER=0
+until docker compose exec -T db mysqladmin ping -h localhost --silent >/dev/null 2>&1; do
+    echo -n "."
+    sleep 2
+    COUNTER=$((COUNTER + 1))
+    if [ $COUNTER -eq $MAX_TRIES ]; then
+        echo ""
+        echo "❌ Database failed to start after 60 seconds"
+        exit 1
+    fi
+done
+
+echo ""
+echo "Database is ready!"
 
 echo ""
 echo "Generating application key..."
