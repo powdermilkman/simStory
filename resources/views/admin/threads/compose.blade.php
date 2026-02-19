@@ -10,6 +10,17 @@
         <form action="{{ route('admin.threads.compose.store') }}" method="POST" @submit="prepareSubmit()">
             @csrf
 
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <h4 class="text-sm font-semibold text-red-800 mb-2">Please fix the following errors:</h4>
+                    <ul class="list-disc list-inside space-y-1">
+                        @foreach($errors->all() as $error)
+                            <li class="text-sm text-red-700">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             {{-- Thread Settings --}}
             <div class="bg-white rounded-lg shadow p-6 mb-6 overflow-visible">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Thread Settings</h3>
@@ -346,29 +357,45 @@
 
     @push('scripts')
     <script>
+        window.__threadComposerDefaults = {
+            oldPosts: @json(old('posts', [])),
+            oldThreadDate: @json(old('fake_created_at', '')),
+        };
+
+        function __makeComposerPost(i, old) {
+            old = old || {};
+            return {
+                id: 'post_' + (i + 1),
+                author_id: old.author_id || null,
+                content: old.content || '',
+                fake_created_at: old.fake_created_at || '',
+                phase_id: old.phase_id || null,
+                hasChoice: old.has_choice === '1',
+                choiceType: old.choice_type || 'choice',
+                choicePromptText: old.choice_prompt_text || '',
+                choiceIdentifier: old.choice_identifier || '',
+                choiceDescription: old.choice_description || '',
+                choiceOptions: (old.choice_options && old.choice_options.length >= 2)
+                    ? old.choice_options.map(o => ({ label: o.label || '', description: o.description || '', result_votes: {}, spawned_post_id: '' }))
+                    : [{label:'',description:'',result_votes:{},spawned_post_id:''},{label:'',description:'',result_votes:{},spawned_post_id:''}],
+                previewHtml: '<div class="text-center py-8 text-gray-500 text-sm">Enter content and select an author</div>',
+                previewLoading: false,
+            };
+        }
+
         document.addEventListener('alpine:init', () => {
+            const _defaults = window.__threadComposerDefaults;
+            const _oldPosts = _defaults.oldPosts;
+            const _initialPosts = _oldPosts.length > 0
+                ? _oldPosts.map((old, i) => __makeComposerPost(i, old))
+                : [__makeComposerPost(0, {})];
+
             Alpine.data('threadComposer', (config) => ({
                 previewUrl: config.previewUrl,
                 csrfToken: config.csrfToken,
-                threadDate: '',
-                posts: [
-                    {
-                        id: 'post_1',
-                        author_id: null,
-                        content: '',
-                        fake_created_at: '',
-                        phase_id: null,
-                        hasChoice: false,
-                        choiceType: 'choice',
-                        choicePromptText: '',
-                        choiceIdentifier: '',
-                        choiceDescription: '',
-                        choiceOptions: [{label:'',description:'',result_votes:{},spawned_post_id:''},{label:'',description:'',result_votes:{},spawned_post_id:''}],
-                        previewHtml: '<div class="text-center py-8 text-gray-500 text-sm">Enter content and select an author</div>',
-                        previewLoading: false,
-                    }
-                ],
-                postIdCounter: 1,
+                threadDate: _defaults.oldThreadDate || '',
+                posts: _initialPosts,
+                postIdCounter: Math.max(1, _initialPosts.length),
 
                 addPost() {
                     this.postIdCounter++;
@@ -386,21 +413,10 @@
                         newDate = date.toISOString().slice(0, 16);
                     }
 
-                    this.posts.push({
-                        id: 'post_' + this.postIdCounter,
-                        author_id: null,
-                        content: '',
-                        fake_created_at: newDate,
-                        phase_id: null,
-                        hasChoice: false,
-                        choiceType: 'choice',
-                        choicePromptText: '',
-                        choiceIdentifier: '',
-                        choiceDescription: '',
-                        choiceOptions: [{label:'',description:'',result_votes:{},spawned_post_id:''},{label:'',description:'',result_votes:{},spawned_post_id:''}],
-                        previewHtml: '<div class="text-center py-8 text-gray-500 text-sm">Enter content and select an author</div>',
-                        previewLoading: false,
-                    });
+                    const newPost = __makeComposerPost(this.postIdCounter - 1, {});
+                    newPost.id = 'post_' + this.postIdCounter;
+                    newPost.fake_created_at = newDate;
+                    this.posts.push(newPost);
                 },
 
                 removePost(index) {
