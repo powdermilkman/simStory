@@ -30,6 +30,32 @@ echo ""
 echo "Starting update process..."
 echo ""
 
+# Pull latest deploy files from GitHub
+echo "→ Pulling latest deploy files from GitHub..."
+GITHUB_REPO=$(grep "GITHUB_REPO:" docker-compose.yml 2>/dev/null | sed 's/.*GITHUB_REPO: *//' | tr -d '"' | tr -d "'" | tr -d ' ')
+GITHUB_BRANCH=$(grep "GITHUB_BRANCH:" docker-compose.yml 2>/dev/null | sed 's/.*GITHUB_BRANCH: *//' | tr -d '"' | tr -d "'" | tr -d ' ')
+GITHUB_BRANCH=${GITHUB_BRANCH:-main}
+
+if [ -n "$GITHUB_REPO" ]; then
+    RAW_BASE=$(echo "$GITHUB_REPO" | sed 's|github.com|raw.githubusercontent.com|' | sed 's|\.git$||')
+    DEPLOY_RAW_URL="$RAW_BASE/$GITHUB_BRANCH/deploy"
+
+    for file in docker-compose.yml Dockerfile setup.sh update.sh; do
+        if curl -fsSL "$DEPLOY_RAW_URL/$file" -o "$file.tmp" 2>/dev/null; then
+            mv "$file.tmp" "$file"
+            echo "  ✓ $file"
+        else
+            rm -f "$file.tmp"
+            echo "  ⚠ Could not fetch $file — keeping existing"
+        fi
+    done
+    chmod +x update.sh setup.sh
+else
+    echo "  ⚠ Could not determine repo URL from docker-compose.yml — skipping deploy file update"
+fi
+
+echo ""
+
 # Stop current containers
 echo "→ Stopping containers..."
 docker compose down
