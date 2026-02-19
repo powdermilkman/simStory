@@ -52,3 +52,4 @@ Thumbs.db
 # Uncomment if you experience issues with local Docker volumes
 # /storage/
 # /bootstrap/cache/
+/example

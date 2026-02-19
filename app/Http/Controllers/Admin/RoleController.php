@@ -28,6 +28,7 @@ class RoleController extends Controller
         ]);
 
         $validated['sort_order'] = $validated['sort_order'] ?? Role::max('sort_order') + 1;
+        $validated['post_highlight_color'] = $request->input('enable_highlight') ? $request->input('post_highlight_color') : null;
 
         Role::create($validated);
 
@@ -47,6 +48,8 @@ class RoleController extends Controller
             'color' => 'required|string|regex:/^#[a-fA-F0-9]{6}$/',
             'sort_order' => 'nullable|integer',
         ]);
+
+        $validated['post_highlight_color'] = $request->input('enable_highlight') ? $request->input('post_highlight_color') : null;
 
         $role->update($validated);
 

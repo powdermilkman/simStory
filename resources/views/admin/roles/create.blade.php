@@ -4,7 +4,13 @@
     </x-slot>
 
     <div class="bg-white rounded-lg shadow p-6 max-w-xl">
-        <form action="{{ route('admin.roles.store') }}" method="POST" x-data="{ color: '#6b7280', name: '' }">
+        <form action="{{ route('admin.roles.store') }}" method="POST"
+              x-data="{
+                  color: '{{ old('color', '#6b7280') }}',
+                  name: '{{ old('name', '') }}',
+                  enableHighlight: {{ old('enable_highlight') ? 'true' : 'false' }},
+                  highlightColor: '{{ old('post_highlight_color', '#e8923a') }}'
+              }">
             @csrf
 
             <div class="mb-4">
@@ -18,11 +24,11 @@
             </div>
 
             <div class="mb-4">
-                <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <label for="color" class="block text-sm font-medium text-gray-700 mb-1">Badge Color</label>
                 <div class="flex items-center gap-3">
                     <input type="color" name="color" id="color" x-model="color" value="{{ old('color', '#6b7280') }}"
                         class="w-12 h-10 rounded border-gray-300 cursor-pointer">
-                    <input type="text" x-model="color" 
+                    <input type="text" x-model="color"
                         class="w-28 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
                         pattern="^#[a-fA-F0-9]{6}$" placeholder="#6b7280">
                 </div>
@@ -38,8 +44,27 @@
                 <p class="mt-1 text-xs text-gray-500">Lower numbers appear first in dropdowns</p>
             </div>
 
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                <label class="flex items-center gap-3 cursor-pointer mb-3">
+                    <input type="checkbox" name="enable_highlight" value="1" x-model="enableHighlight"
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500">
+                    <span class="text-sm font-medium text-gray-700">Highlight posts from this role</span>
+                </label>
+                <div x-show="enableHighlight" x-transition>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Post Highlight Color</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" name="post_highlight_color" x-model="highlightColor"
+                            class="w-12 h-10 rounded border-gray-300 cursor-pointer">
+                        <input type="text" x-model="highlightColor"
+                            class="w-28 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 font-mono text-sm"
+                            pattern="^#[a-fA-F0-9]{6}$">
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Posts from characters with this role will be tinted with this color on the forum thread view.</p>
+                </div>
+            </div>
+
             <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Badge Preview</label>
                 <span class="inline-block px-2 py-1 text-xs font-medium rounded"
                       :style="{ backgroundColor: color, color: getLuminance(color) > 0.5 ? '#000' : '#fff' }"
                       x-text="name || 'Role Name'"></span>

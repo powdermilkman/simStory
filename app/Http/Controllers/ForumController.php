@@ -150,7 +150,13 @@ class ForumController extends Controller
             app(PhaseProgressService::class)->checkProgress($reader);
         }
 
-        return view('forum.thread', compact('category', 'thread', 'posts', 'reader'));
+        $trendingThreads = Thread::with(['author', 'category'])
+            ->visibleTo($reader)
+            ->orderByDesc('view_count')
+            ->limit(5)
+            ->get();
+
+        return view('forum.thread', compact('category', 'thread', 'posts', 'reader', 'trendingThreads'));
     }
 
     public function profile(Character $character)

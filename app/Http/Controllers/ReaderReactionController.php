@@ -23,22 +23,25 @@ class ReaderReactionController extends Controller
             'type' => 'required|string|in:' . implode(',', array_keys(Reaction::TYPES)),
         ]);
 
-        // Check if reader has already reacted with this type
+        // One reaction per post — find any existing reaction from this reader
         $existing = Reaction::where('post_id', $post->id)
             ->where('reader_id', $reader->id)
-            ->where('type', $validated['type'])
             ->first();
 
-        if ($existing) {
-            // Remove the reaction
+        if ($existing && $existing->type === $validated['type']) {
+            // Same type — toggle off
             $existing->delete();
             $reacted = false;
         } else {
-            // Add the reaction
+            // Different type or no existing — replace / add
+            if ($existing) {
+                $existing->delete();
+            }
+
             Reaction::create([
                 'post_id' => $post->id,
                 'reader_id' => $reader->id,
-                'character_id' => null, // This is for story characters, not readers
+                'character_id' => null,
                 'type' => $validated['type'],
             ]);
             $reacted = true;

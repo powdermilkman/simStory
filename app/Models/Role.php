@@ -11,6 +11,7 @@ class Role extends Model
         'name',
         'color',
         'sort_order',
+        'post_highlight_color',
     ];
 
     public function characters(): HasMany

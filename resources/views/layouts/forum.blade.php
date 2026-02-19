@@ -14,18 +14,23 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
         <style>
             :root {
-                --color-bg: #0a0a0f;
-                --color-surface: #14141f;
-                --color-surface-hover: #1a1a28;
-                --color-border: #2a2a3a;
+                --color-bg: #1a1d21;
+                --color-surface: #23272b;
+                --color-surface-hover: #2a2e33;
+                --color-border: #343a40;
                 --color-text: #e8e8ed;
                 --color-text-muted: #8888a0;
                 --color-accent: #5c9ead;
                 --color-accent-warm: #e0a458;
             }
             
+            [x-cloak] { display: none !important; }
+
             body {
                 font-family: 'Outfit', sans-serif;
                 background-color: var(--color-bg);
@@ -34,14 +39,19 @@
         </style>
     </head>
     <body class="antialiased min-h-screen" style="background-color: var(--color-bg);">
+        <!-- Forum Header -->
+        <header style="background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); border-bottom: 3px solid var(--color-accent); padding: 1rem 0;">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div style="font-size: 1.75rem; font-weight: 700; color: var(--color-accent); letter-spacing: -0.5px;">{{ config('app.name') }}</div>
+                <div style="color: #8b949e; font-size: 0.85rem;">The Culture's Premier Simulation Discussion Community</div>
+            </div>
+        </header>
+
         <!-- Navigation -->
         <nav style="background-color: var(--color-surface); border-bottom: 1px solid var(--color-border);">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <div class="flex items-center space-x-8">
-                        <a href="{{ route('forum.index') }}" class="text-xl font-semibold" style="color: var(--color-accent);">
-                            {{ config('app.name') }}
-                        </a>
                         <div class="hidden md:flex space-x-6">
                             <a href="{{ route('forum.index') }}" class="text-sm hover:opacity-80" style="color: var(--color-text-muted);">
                                 Forums

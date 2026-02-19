@@ -28,7 +28,7 @@ class PreviewController extends Controller
 
             // Build a temporary post object for preview
             if (!empty($validated['post_id'])) {
-                $post = Post::with(['author.role', 'attachments'])->find($validated['post_id']);
+                $post = Post::with(['author.role', 'attachments', 'choice.options'])->find($validated['post_id']);
             } else {
                 $post = new Post();
                 // Set empty attachments collection for new posts
