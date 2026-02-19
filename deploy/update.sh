@@ -89,6 +89,25 @@ until docker compose exec -T app php -r "new PDO('mysql:host=db;port=3306;dbname
 done
 echo " ready!"
 
+# Ensure APP_KEY is set and persisted to .env
+if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
+    echo ""
+    echo "→ APP_KEY missing from .env — generating..."
+    APP_KEY=$(docker compose exec -T app php artisan key:generate --show --force | tr -d '\r\n')
+    if [ -n "$APP_KEY" ]; then
+        if grep -q "^APP_KEY=" .env; then
+            sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+        else
+            echo "APP_KEY=$APP_KEY" >> .env
+        fi
+        docker compose restart app
+        sleep 3
+        echo "  ✓ Key saved to .env"
+    else
+        echo "  ⚠ Could not generate key — set APP_KEY in .env manually"
+    fi
+fi
+
 # Run migrations
 echo ""
 echo "→ Running database migrations..."

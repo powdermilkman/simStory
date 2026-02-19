@@ -91,7 +91,13 @@ echo "Database is fully ready!"
 
 echo ""
 echo "Generating application key..."
-docker compose exec -T app php artisan key:generate --force
+APP_KEY=$(docker compose exec -T app php artisan key:generate --show --force | tr -d '\r\n')
+if [ -n "$APP_KEY" ]; then
+    sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+    echo "  ✓ Key saved to .env"
+else
+    echo "  ⚠ Could not capture key — you may need to set APP_KEY manually"
+fi
 
 echo ""
 echo "Running database migrations..."
