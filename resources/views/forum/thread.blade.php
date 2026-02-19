@@ -294,10 +294,24 @@
                 height: 60px;
                 font-size: 1.5rem;
             }
+
+            .thread-layout {
+                flex-direction: column;
+            }
+
+            .trending-sidebar {
+                display: none !important;
+            }
+
+            .breadcrumb-nav {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start !important;
+            }
         }
     </style>
 
-    <div class="flex gap-6">
+    <div class="flex gap-6 thread-layout">
         <!-- Main Content -->
         <div class="flex-1 min-w-0">
 
@@ -702,7 +716,7 @@
         </div>
 
         <!-- Trending Sidebar -->
-        <aside style="width: 240px; min-width: 240px;">
+        <aside class="trending-sidebar" style="width: 240px; min-width: 240px;">
             <div class="sidebar-card">
                 <div class="sidebar-card-header">
                     <i class="bi bi-fire"></i> Trending Threads

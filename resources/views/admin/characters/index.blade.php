@@ -8,7 +8,8 @@
         </div>
     </x-slot>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    {{-- Desktop Table --}}
+    <div class="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -80,5 +81,57 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    {{-- Mobile Card List --}}
+    <div class="md:hidden space-y-3">
+        @forelse($characters as $character)
+            <div class="bg-white rounded-lg shadow p-4">
+                <div class="flex items-center gap-3 mb-3">
+                    @if($character->avatar_path)
+                        <img src="{{ Storage::url($character->avatar_path) }}" alt="{{ $character->display_name }}" class="h-12 w-12 rounded-full flex-shrink-0">
+                    @else
+                        <div class="h-12 w-12 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-gray-600 font-bold text-lg">
+                            {{ substr($character->display_name, 0, 1) }}
+                        </div>
+                    @endif
+                    <div class="min-w-0">
+                        <a href="{{ route('admin.characters.show', $character) }}" class="font-medium text-blue-600 hover:underline block truncate">
+                            {{ $character->display_name }}
+                        </a>
+                        <div class="text-sm text-gray-500">{{ '@' . $character->username }}</div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-1 mb-2">
+                    @if($character->role)
+                        <span class="inline-block px-2 py-0.5 text-xs font-medium rounded"
+                              style="background-color: {{ $character->role->color }}; color: {{ $character->role->text_color }};">
+                            {{ $character->role->name }}
+                        </span>
+                    @endif
+                    @if($character->is_official)
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-blue-600 text-white">
+                            ✓ Official
+                        </span>
+                    @endif
+                </div>
+                <div class="text-sm text-gray-500 space-y-0.5">
+                    <div>{{ $character->post_count }} posts</div>
+                    <div>Joined {{ $character->fake_join_date?->format('M d, Y') ?? 'Not set' }}</div>
+                </div>
+                <div class="flex gap-4 mt-3 pt-3 border-t border-gray-100">
+                    <a href="{{ route('admin.characters.edit', $character) }}" class="text-sm text-indigo-600 hover:text-indigo-900">Edit</a>
+                    <form action="{{ route('admin.characters.destroy', $character) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure? This will delete all posts by this character.')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-sm text-red-600 hover:text-red-900">Delete</button>
+                    </form>
+                </div>
+            </div>
+        @empty
+            <div class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                No characters found. <a href="{{ route('admin.characters.create') }}" class="text-blue-600 hover:underline">Create one</a>.
+            </div>
+        @endforelse
     </div>
 </x-admin-layout>

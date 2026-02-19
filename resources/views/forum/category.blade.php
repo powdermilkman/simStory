@@ -27,8 +27,8 @@
                style="border-bottom: 1px solid var(--color-border);"
                onmouseover="this.style.backgroundColor='var(--color-surface-hover)'"
                onmouseout="this.style.backgroundColor='transparent'">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1 flex-wrap">
                             @if($thread->is_pinned)
                                 <span class="text-xs px-2 py-0.5 rounded" style="background-color: var(--color-accent); color: var(--color-bg);">Pinned</span>
@@ -48,7 +48,7 @@
                             <span>{{ $thread->fake_created_at?->diffForHumans() ?? 'Unknown date' }}</span>
                         </div>
                     </div>
-                    <div class="text-right ml-4">
+                    <div class="text-right flex-shrink-0">
                         @php $visiblePosts = $threadVisiblePostCounts[$thread->id] ?? $thread->posts->count(); @endphp
                         <span class="text-lg" style="color: var(--color-text);">{{ max(0, $visiblePosts - 1) }}</span>
                         <span class="block text-xs" style="color: var(--color-text-muted);">replies</span>

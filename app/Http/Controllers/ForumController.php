@@ -179,14 +179,6 @@ class ForumController extends Controller
     {
         $reader = $this->getReader();
 
-        // Get character-to-character archived messages (existing behavior)
-        $archivedMessages = PrivateMessage::with(['sender', 'recipient'])
-            ->archivedMessages()
-            ->visibleTo($reader)
-            ->orderByDesc('fake_sent_at')
-            ->paginate(config('pagination.forum'));
-
-        // Get reader's personal inbox if logged in
         $inboxMessages = null;
         if ($reader) {
             $inboxMessages = PrivateMessage::with(['sender'])
@@ -196,7 +188,7 @@ class ForumController extends Controller
                 ->paginate(config('pagination.forum'), ['*'], 'inbox_page');
         }
 
-        return view('forum.messages', compact('archivedMessages', 'inboxMessages'));
+        return view('forum.messages', compact('inboxMessages'));
     }
 
     public function message(PrivateMessage $message)

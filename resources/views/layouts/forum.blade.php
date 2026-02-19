@@ -48,10 +48,21 @@
         </header>
 
         <!-- Navigation -->
-        <nav style="background-color: var(--color-surface); border-bottom: 1px solid var(--color-border);">
+        <nav x-data="{ mobileMenuOpen: false }" style="background-color: var(--color-surface); border-bottom: 1px solid var(--color-border);">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
-                    <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-4">
+                        <!-- Hamburger (mobile only) -->
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 rounded hover:opacity-80" style="color: var(--color-text-muted);" aria-label="Toggle menu">
+                            <svg x-show="!mobileMenuOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                            <svg x-show="mobileMenuOpen" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+
+                        <!-- Desktop nav links -->
                         <div class="hidden md:flex space-x-6">
                             <a href="{{ route('forum.index') }}" class="text-sm hover:opacity-80" style="color: var(--color-text-muted);">
                                 Forums
@@ -86,6 +97,26 @@
                             </a>
                         @endauth
                     </div>
+                </div>
+
+                <!-- Mobile Dropdown Menu -->
+                <div x-show="mobileMenuOpen" x-cloak @click.outside="mobileMenuOpen = false"
+                     class="md:hidden border-t pb-3 pt-2 space-y-1"
+                     style="border-color: var(--color-border);">
+                    <a href="{{ route('forum.index') }}" @click="mobileMenuOpen = false"
+                       class="block px-2 py-2 text-sm rounded hover:opacity-80"
+                       style="color: var(--color-text-muted);">Forums</a>
+                    <a href="{{ route('forum.messages') }}" @click="mobileMenuOpen = false"
+                       class="flex items-center gap-2 px-2 py-2 text-sm rounded hover:opacity-80"
+                       style="color: var(--color-text-muted);">
+                        Messages
+                        @if($unreadMessageCount > 0)
+                            <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold rounded-full"
+                                  style="background-color: var(--color-accent); color: var(--color-bg); min-width: 1.25rem;">
+                                {{ $unreadMessageCount > 99 ? '99+' : $unreadMessageCount }}
+                            </span>
+                        @endif
+                    </a>
                 </div>
             </div>
         </nav>

@@ -14,7 +14,7 @@
     </x-slot>
 
     <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <div class="flex items-center gap-4 text-sm text-gray-500">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
             <span>Category: <a href="{{ route('admin.categories.show', $thread->category) }}" class="text-blue-600 hover:underline">{{ $thread->category->name }}</a></span>
             <span>•</span>
             <span>Author: <a href="{{ route('admin.characters.show', $thread->author) }}" class="text-blue-600 hover:underline">{{ $thread->author->display_name }}</a></span>
@@ -39,9 +39,9 @@
     <div class="space-y-4">
         @foreach($thread->posts as $post)
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="flex">
+                <div class="flex flex-col md:flex-row">
                     <!-- Author sidebar -->
-                    <div class="w-48 bg-gray-50 p-4 border-r">
+                    <div class="md:w-48 bg-gray-50 p-4 md:border-r border-b md:border-b-0">
                         <div class="text-center">
                             @if($post->author->avatar_path)
                                 <img src="{{ Storage::url($post->author->avatar_path) }}" alt="{{ $post->author->display_name }}" class="h-16 w-16 rounded-full mx-auto mb-2">
