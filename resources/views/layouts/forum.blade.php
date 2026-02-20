@@ -146,7 +146,8 @@
         <!-- Footer -->
         <footer class="mt-auto py-8" style="border-top: 1px solid var(--color-border);">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center" style="color: var(--color-text-muted);">
-                <p class="text-sm">{{ config('app.name') }} — A place to share simulation experiences</p>
+                <p class="text-sm font-medium mb-1" style="color: var(--color-text);">{{ config('app.name') }}</p>
+                <p class="text-xs">All discussions are subject to Communication Standards</p>
             </div>
         </footer>
     </body>
