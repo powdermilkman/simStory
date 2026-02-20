@@ -6,14 +6,18 @@
         @font-face { font-family: 'AlienLovecrafts'; src: url('/fonts/lovecrafts-diary.regular.ttf') format('truetype'); }
         @font-face { font-family: 'AlienAlphacode';  src: url('/fonts/alphacode-beyond.regular.ttf') format('truetype'); }
         @font-face { font-family: 'AlienEcholot';    src: url('/fonts/echolot.regular.ttf') format('truetype'); }
+        @font-face { font-family: 'AlienLomtrian';   src: url('/fonts/Lomtrian.ttf') format('truetype'); }
+        @font-face { font-family: 'AlienStray';      src: url('/fonts/stray.ttf') format('truetype'); }
     </style>
     @endif
 
     @php
     $alienFonts = [
-        'lovecrafts' => ['family' => "'AlienLovecrafts', monospace", 'size' => '1.1em',  'spacing' => '0.05em'],
+        'lovecrafts' => ['family' => "'AlienLovecrafts', monospace", 'size' => '0.8em',  'spacing' => '0.05em'],
         'alphacode'  => ['family' => "'AlienAlphacode', monospace",  'size' => '1.0em',  'spacing' => '0.08em'],
-        'echolot'    => ['family' => "'AlienEcholot', monospace",    'size' => '1.05em', 'spacing' => '0.06em'],
+        'echolot'    => ['family' => "'AlienEcholot', monospace",    'size' => '1.4em', 'spacing' => '0.06em'],
+        'lomtrian'   => ['family' => "'AlienLomtrian', monospace",   'size' => '1.4em',  'spacing' => '0.06em'],
+        'stray'      => ['family' => "'AlienStray', monospace",      'size' => '0.7em',  'spacing' => '0.05em'],
     ];
     $alienFont = $alienFonts[$character->alien_style ?? 'lovecrafts'] ?? $alienFonts['lovecrafts'];
     @endphp

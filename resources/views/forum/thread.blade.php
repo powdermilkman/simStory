@@ -14,6 +14,14 @@
             font-family: 'AlienEcholot';
             src: url('/fonts/echolot.regular.ttf') format('truetype');
         }
+        @font-face {
+            font-family: 'AlienLomtrian';
+            src: url('/fonts/Lomtrian.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'AlienStray';
+            src: url('/fonts/stray.ttf') format('truetype');
+        }
 
         .post-container {
             background-color: #23272b;
@@ -211,6 +219,42 @@
             letter-spacing: 0.5px;
         }
 
+        .spoiler {
+            display: inline-block;
+            vertical-align: baseline;
+            position: relative;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 6px;
+            clip-path: inset(-1px round 7px);
+        }
+        .spoiler:not(.revealed) {
+            box-shadow: inset 0 0 0 1px var(--color-border, #343a40);
+            background: rgba(0, 0, 0, 0.45);
+        }
+        .spoiler:not(.revealed) * {
+            filter: blur(5px);
+            user-select: none;
+        }
+        .spoiler:not(.revealed)::before {
+            content: "Spoiler";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.75em;
+            font-style: normal;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            color: var(--color-text);
+            pointer-events: none;
+            user-select: none;
+        }
+        .spoiler.revealed {
+            box-shadow: inset 0 0 0 1px var(--color-border, #343a40);
+        }
+
         .breadcrumb-nav {
             background-color: #23272b;
             border: 1px solid #343a40;
@@ -364,9 +408,11 @@
             <!-- Posts -->
             @php
             $alienFonts = [
-                'lovecrafts' => ['family' => 'AlienLovecrafts', 'size' => '1.1em',  'spacing' => '0.05em'],
+                'lovecrafts' => ['family' => 'AlienLovecrafts', 'size' => '0.8em',  'spacing' => '0.05em'],
                 'alphacode'  => ['family' => 'AlienAlphacode',  'size' => '1.0em',  'spacing' => '0.08em'],
-                'echolot'    => ['family' => 'AlienEcholot',     'size' => '1.05em', 'spacing' => '0.06em'],
+                'echolot'    => ['family' => 'AlienEcholot',     'size' => '1.4em', 'spacing' => '0.06em'],
+                'lomtrian'   => ['family' => 'AlienLomtrian',    'size' => '1.4em',  'spacing' => '0.06em'],
+                'stray'      => ['family' => 'AlienStray',       'size' => '0.7em',  'spacing' => '0.05em'],
             ];
             @endphp
             @foreach($posts as $postIndex => $post)
@@ -454,11 +500,11 @@
                                      style="color: var(--color-text); line-height: 1.9;
                                             font-family: '{{ $alienFont['family'] }}', monospace;
                                             font-size: {{ $alienFont['size'] }};">
-                                    <noscript>{!! nl2br(e(preg_replace('/<en>(.*?)<\/en>/is', '$1', $post->content))) !!}</noscript>
+                                    <noscript>{!! nl2br(e(preg_replace(['/\[spoiler\](.*?)\[\/spoiler\]/is', '/<en>(.*?)<\/en>/is'], ['$1', '$1'], $post->content))) !!}</noscript>
                                 </div>
                             @else
                                 <div style="color: var(--color-text); line-height: 1.7;">
-                                    {!! nl2br(e($post->content)) !!}
+                                    {!! preg_replace('/\[spoiler\](.*?)\[\/spoiler\]/is', '<span class="spoiler" title="Click to reveal spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>', nl2br(e($post->content))) !!}
                                 </div>
                             @endif
 
@@ -833,9 +879,11 @@
         lovecrafts: "'AlienLovecrafts', monospace",
         alphacode:  "'AlienAlphacode', monospace",
         echolot:    "'AlienEcholot', monospace",
+        lomtrian:   "'AlienLomtrian', monospace",
+        stray:      "'AlienStray', monospace",
     };
-    const SPACING_MAP = { lovecrafts: '0.05em', alphacode: '0.08em', echolot: '0.06em' };
-    const SIZE_MAP    = { lovecrafts: '1.1em',  alphacode: '1.0em',  echolot: '1.05em' };
+    const SPACING_MAP = { lovecrafts: '0.05em', alphacode: '0.08em', echolot: '0.06em', lomtrian: '0.06em', stray: '0.05em' };
+    const SIZE_MAP    = { lovecrafts: '1.1em',  alphacode: '1.0em',  echolot: '1.05em', lomtrian: '1.0em',  stray: '1.0em'  };
 
     // Seeded LCG — stable alien words on every page load
     function rng(seed) {
@@ -890,6 +938,7 @@
                     const span = document.createElement('span');
                     span.textContent         = word;
                     span.style.fontFamily    = BODY_FONT;
+                    span.style.fontSize      = '1rem';
                     span.style.letterSpacing = 'normal';
                     frag.appendChild(span);
                 }
@@ -897,6 +946,7 @@
                     const sp = document.createElement('span');
                     sp.textContent         = ' ';
                     sp.style.fontFamily    = BODY_FONT;
+                    sp.style.fontSize      = '1rem';
                     sp.style.letterSpacing = '0';
                     frag.appendChild(sp);
                 }
@@ -904,21 +954,42 @@
         });
     }
 
-    // Build alien DOM: split on <en>…</en> tags; alien segments get scrambled
-    // glyphs, <en> segments stay in body font and are never touched by the translator.
-    function buildAlienContent(container, postId, style, originalText) {
-        const letterSpacing = SPACING_MAP[style] || '0.05em';
-        const frag          = document.createDocumentFragment();
-        const wordIdxRef    = { i: 0 }; // mutable counter shared across segments
-
-        // Split preserving the <en>…</en> delimiters
-        const parts = originalText.split(/(<en>[\s\S]*?<\/en>)/i);
+    // Process a text segment that may contain <en>…</en> tags but no [spoiler] tags.
+    function processMixedContent(frag, text, postId, letterSpacing, wordIdxRef) {
+        const parts = text.split(/(<en>[\s\S]*?<\/en>)/i);
         parts.forEach(part => {
             const enMatch = part.match(/^<en>([\s\S]*?)<\/en>$/i);
             if (enMatch) {
                 appendEnglishWords(frag, enMatch[1]);
             } else if (part) {
                 appendAlienWords(frag, part, postId, letterSpacing, wordIdxRef);
+            }
+        });
+    }
+
+    // Build alien DOM: handles [spoiler]…[/spoiler] and <en>…</en> tags.
+    // Alien segments get scrambled glyphs; <en> segments stay in body font;
+    // [spoiler] segments are hidden until clicked.
+    function buildAlienContent(container, postId, style, originalText) {
+        const letterSpacing = SPACING_MAP[style] || '0.05em';
+        const frag          = document.createDocumentFragment();
+        const wordIdxRef    = { i: 0 }; // mutable counter shared across segments
+
+        // Split on [spoiler]…[/spoiler] first, preserving delimiters
+        const parts = originalText.split(/(\[spoiler\][\s\S]*?\[\/spoiler\])/i);
+        parts.forEach(part => {
+            const spoilerMatch = part.match(/^\[spoiler\]([\s\S]*?)\[\/spoiler\]$/i);
+            if (spoilerMatch) {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'spoiler';
+                wrapper.title     = 'Click to reveal spoiler';
+                wrapper.addEventListener('click', () => wrapper.classList.toggle('revealed'));
+                const innerFrag = document.createDocumentFragment();
+                processMixedContent(innerFrag, spoilerMatch[1], postId, letterSpacing, wordIdxRef);
+                wrapper.appendChild(innerFrag);
+                frag.appendChild(wrapper);
+            } else if (part) {
+                processMixedContent(frag, part, postId, letterSpacing, wordIdxRef);
             }
         });
 
@@ -940,7 +1011,7 @@
         span.textContent = target;
         span.style.fontFamily    = BODY_FONT;
         span.style.letterSpacing = 'normal';
-        span.style.fontSize      = 'inherit';
+        span.style.fontSize      = '1rem';
     }
 
     // Group word spans into sentences, splitting after words that end a sentence
@@ -966,7 +1037,6 @@
             // Revert to alien: restore container font and per-span alien styles
             const spacing = SPACING_MAP[style] || '0.05em';
             container.style.fontFamily = FONT_MAP[style] || FONT_MAP.lovecrafts;
-            container.style.fontSize   = SIZE_MAP[style] || '1.0em';
             container.querySelectorAll('span[data-alien]').forEach(s => {
                 s.textContent         = s.dataset.alien;
                 s.style.fontFamily    = '';
@@ -991,7 +1061,6 @@
 
         // Reset container font so space text nodes render in the body font
         container.style.fontFamily = BODY_FONT;
-        container.style.fontSize   = '';
 
         btn.textContent = 'Show Original';
         btn.dataset.translated = 'true';

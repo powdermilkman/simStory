@@ -111,6 +111,8 @@
                         <option value="lovecrafts" {{ old('alien_style') === 'lovecrafts' ? 'selected' : '' }}>Lovecraft's Diary</option>
                         <option value="alphacode"  {{ old('alien_style') === 'alphacode'  ? 'selected' : '' }}>Alpha Code Beyond</option>
                         <option value="echolot"    {{ old('alien_style') === 'echolot'    ? 'selected' : '' }}>Echolot</option>
+                        <option value="lomtrian"   {{ old('alien_style') === 'lomtrian'   ? 'selected' : '' }}>Lomtrian</option>
+                        <option value="stray"      {{ old('alien_style') === 'stray'      ? 'selected' : '' }}>Stray</option>
                     </select>
                 </div>
             </div>

@@ -37,7 +37,7 @@ class CharacterController extends Controller
             'bytes' => 'nullable|integer|min:0|max:5',
             'bio' => 'nullable|string',
             'is_alien' => 'nullable|boolean',
-            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot',
+            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot,lomtrian,stray',
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -85,7 +85,7 @@ class CharacterController extends Controller
             'bytes' => 'nullable|integer|min:0|max:5',
             'bio' => 'nullable|string',
             'is_alien' => 'nullable|boolean',
-            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot',
+            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot,lomtrian,stray',
         ]);
 
         if ($request->hasFile('avatar')) {
