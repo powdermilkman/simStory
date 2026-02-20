@@ -56,6 +56,12 @@
                 </div>
             @endif
 
+            @if($post->author->is_official)
+                <div class="user-badge" style="background: var(--color-accent); color: var(--color-bg);">
+                    ✓ Official
+                </div>
+            @endif
+
             {{-- Bytes Rating --}}
             @if($post->author->show_bytes)
                 @php $effectiveBytes = $post->author->bytes ?? 0; @endphp

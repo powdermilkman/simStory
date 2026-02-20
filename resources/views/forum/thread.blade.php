@@ -84,11 +84,12 @@
         }
 
         .user-badge {
-            display: inline-block;
+            display: block;
+            width: fit-content;
+            margin: 0 auto 0.4rem;
             font-size: 0.7rem;
             padding: 0.2rem 0.5rem;
             border-radius: 3px;
-            margin-bottom: 0.75rem;
             font-weight: 500;
             color: white;
         }
@@ -419,6 +420,12 @@
                             @if($post->author->role)
                                 <div class="user-badge" style="background: {{ $post->author->role->color }}; color: {{ $post->author->role->text_color }};">
                                     {{ $post->author->role->name }}
+                                </div>
+                            @endif
+
+                            @if($post->author->is_official)
+                                <div class="user-badge" style="background: var(--color-accent); color: var(--color-bg);">
+                                    ✓ Official
                                 </div>
                             @endif
 
