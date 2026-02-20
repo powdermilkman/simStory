@@ -22,6 +22,8 @@ class Character extends Model
         'bio',
         'bytes',
         'show_bytes',
+        'is_alien',
+        'alien_style',
     ];
 
     protected $casts = [
@@ -29,6 +31,7 @@ class Character extends Model
         'is_official' => 'boolean',
         'show_bytes' => 'boolean',
         'bytes' => 'integer',
+        'is_alien' => 'boolean',
     ];
 
     public function role(): BelongsTo

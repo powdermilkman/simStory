@@ -56,10 +56,6 @@
                 </div>
             @endif
 
-            <div class="user-stats" style="margin-top: 0.5rem;">
-                <div><span class="stat-value">{{ number_format($post->author->post_count) }}</span> posts</div>
-            </div>
-
             {{-- Bytes Rating --}}
             @if($post->author->show_bytes)
                 @php $effectiveBytes = $post->author->bytes ?? 0; @endphp

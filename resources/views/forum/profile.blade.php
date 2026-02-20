@@ -1,6 +1,23 @@
 <x-forum-layout>
     <x-slot name="title">{{ $character->display_name }} - {{ config('app.name') }}</x-slot>
 
+    @if($character->is_alien)
+    <style>
+        @font-face { font-family: 'AlienLovecrafts'; src: url('/fonts/lovecrafts-diary.regular.ttf') format('truetype'); }
+        @font-face { font-family: 'AlienAlphacode';  src: url('/fonts/alphacode-beyond.regular.ttf') format('truetype'); }
+        @font-face { font-family: 'AlienEcholot';    src: url('/fonts/echolot.regular.ttf') format('truetype'); }
+    </style>
+    @endif
+
+    @php
+    $alienFonts = [
+        'lovecrafts' => ['family' => "'AlienLovecrafts', monospace", 'size' => '1.1em',  'spacing' => '0.05em'],
+        'alphacode'  => ['family' => "'AlienAlphacode', monospace",  'size' => '1.0em',  'spacing' => '0.08em'],
+        'echolot'    => ['family' => "'AlienEcholot', monospace",    'size' => '1.05em', 'spacing' => '0.06em'],
+    ];
+    $alienFont = $alienFonts[$character->alien_style ?? 'lovecrafts'] ?? $alienFonts['lovecrafts'];
+    @endphp
+
     <!-- Breadcrumb -->
     <div class="mb-6 text-sm" style="color: var(--color-text-muted);">
         <a href="{{ route('forum.index') }}" class="hover:opacity-80" style="color: var(--color-accent);">Forums</a>
@@ -37,10 +54,6 @@
                 </div>
                 
                 <div class="flex gap-6 text-sm" style="color: var(--color-text-muted);">
-                    <div>
-                        <span class="font-medium" style="color: var(--color-text);">{{ $character->post_count }}</span>
-                        posts
-                    </div>
                     <div>
                         Joined <span class="font-medium" style="color: var(--color-text);">{{ $character->fake_join_date?->format('F Y') ?? 'Unknown' }}</span>
                     </div>
@@ -79,7 +92,15 @@
                     In <span style="color: var(--color-accent);">{{ $post->thread->title }}</span>
                     · {{ $post->fake_created_at?->diffForHumans() ?? 'Unknown date' }}
                 </p>
-                <p style="color: var(--color-text);">{{ Str::limit(strip_tags($post->content), 150) }}</p>
+                @if($character->is_alien)
+                    <p style="color: var(--color-text);
+                               font-family: {{ $alienFont['family'] }};
+                               font-size: {{ $alienFont['size'] }};
+                               letter-spacing: {{ $alienFont['spacing'] }};
+                               line-height: 1.8;">{{ Str::limit(strip_tags($post->content), 150) }}</p>
+                @else
+                    <p style="color: var(--color-text);">{{ Str::limit(strip_tags($post->content), 150) }}</p>
+                @endif
             </a>
         @empty
             <div class="p-8 text-center" style="color: var(--color-text-muted);">

@@ -2,6 +2,19 @@
     <x-slot name="title">{{ $thread->title }} - {{ config('app.name') }}</x-slot>
 
     <style>
+        @font-face {
+            font-family: 'AlienLovecrafts';
+            src: url('/fonts/lovecrafts-diary.regular.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'AlienAlphacode';
+            src: url('/fonts/alphacode-beyond.regular.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'AlienEcholot';
+            src: url('/fonts/echolot.regular.ttf') format('truetype');
+        }
+
         .post-container {
             background-color: #23272b;
             border: 1px solid #343a40;
@@ -348,6 +361,13 @@
             </div>
 
             <!-- Posts -->
+            @php
+            $alienFonts = [
+                'lovecrafts' => ['family' => 'AlienLovecrafts', 'size' => '1.1em',  'spacing' => '0.05em'],
+                'alphacode'  => ['family' => 'AlienAlphacode',  'size' => '1.0em',  'spacing' => '0.08em'],
+                'echolot'    => ['family' => 'AlienEcholot',     'size' => '1.05em', 'spacing' => '0.06em'],
+            ];
+            @endphp
             @foreach($posts as $postIndex => $post)
                 @php
                     $highlightColor = $post->author->role?->post_highlight_color ?? null;
@@ -362,6 +382,9 @@
                     $currentReaction = $reader
                         ? \App\Models\Reaction::where('post_id', $post->id)->where('reader_id', $reader->id)->value('type')
                         : null;
+                    $isAlien    = $post->author->is_alien ?? false;
+                    $alienStyle = $post->author->alien_style ?? 'lovecrafts';
+                    $alienFont  = $alienFonts[$alienStyle] ?? $alienFonts['lovecrafts'];
                 @endphp
 
                 <article class="post-container" @if($highlightColor) style="border-color: {{ $highlightColor }};" @endif>
@@ -399,10 +422,6 @@
                                 </div>
                             @endif
 
-                            <div class="user-stats" style="margin-top: 0.5rem;">
-                                <div><span class="stat-value">{{ number_format($post->author->post_count) }}</span> posts</div>
-                            </div>
-
                             <!-- Bytes Rating -->
                             @if($post->author->show_bytes)
                                 @php $effectiveBytes = $post->author->getEffectiveBytes($reader ?? null); @endphp
@@ -420,9 +439,21 @@
 
                         <!-- Post Content -->
                         <div class="post-content" @if($highlightColor) style="background-color: {{ $sbarBg }};" @endif>
-                            <div style="color: var(--color-text); line-height: 1.7;">
-                                {!! nl2br(e($post->content)) !!}
-                            </div>
+                            @if($isAlien)
+                                <div class="alien-content"
+                                     data-style="{{ $alienStyle }}"
+                                     data-post-id="{{ $post->id }}"
+                                     data-original="{{ e($post->content) }}"
+                                     style="color: var(--color-text); line-height: 1.9;
+                                            font-family: '{{ $alienFont['family'] }}', monospace;
+                                            font-size: {{ $alienFont['size'] }};">
+                                    <noscript>{!! nl2br(e($post->content)) !!}</noscript>
+                                </div>
+                            @else
+                                <div style="color: var(--color-text); line-height: 1.7;">
+                                    {!! nl2br(e($post->content)) !!}
+                                </div>
+                            @endif
 
                             <!-- Inline Images -->
                             @php
@@ -435,8 +466,8 @@
                                 <div class="mt-4 space-y-4">
                                     @foreach($inlineAttachments->sortBy('sort_order') as $attachment)
                                         <figure>
-                                            <a href="{{ $attachment->url }}" target="_blank" class="block">
-                                                <img src="{{ $attachment->url }}" alt="{{ $attachment->original_filename }}" class="max-w-full rounded-lg" style="border: 1px solid #343a40;">
+                                            <a href="{{ $attachment->url }}" class="lightbox-trigger block" data-caption="{{ $attachment->caption }}">
+                                                <img src="{{ $attachment->url }}" alt="{{ $attachment->original_filename }}" class="max-w-full rounded-lg" style="border: 1px solid #343a40; cursor: zoom-in;">
                                             </a>
                                             @if($attachment->caption)
                                                 <figcaption class="mt-2 text-sm text-center" style="color: #8b949e;">{{ $attachment->caption }}</figcaption>
@@ -451,7 +482,7 @@
                                 <div class="mt-4 pt-4" style="border-top: 1px solid #343a40;">
                                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                                         @foreach($galleryAttachments->sortBy('sort_order') as $attachment)
-                                            <a href="{{ $attachment->url }}" target="_blank" class="block group relative aspect-square overflow-hidden rounded-lg" style="border: 1px solid #343a40;">
+                                            <a href="{{ $attachment->url }}" class="lightbox-trigger block group relative aspect-square overflow-hidden rounded-lg" data-caption="{{ $attachment->caption }}" style="border: 1px solid #343a40; cursor: zoom-in;">
                                                 <img src="{{ $attachment->url }}" alt="{{ $attachment->original_filename }}" class="w-full h-full object-cover transition-transform group-hover:scale-105">
                                                 @if($attachment->caption)
                                                     <div class="absolute bottom-0 left-0 right-0 p-2 text-xs text-white" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
@@ -471,8 +502,8 @@
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($fileAttachments->sortBy('sort_order') as $attachment)
                                             @if($attachment->isImage())
-                                                <a href="{{ $attachment->url }}" target="_blank" class="block">
-                                                    <img src="{{ $attachment->url }}" alt="{{ $attachment->original_filename }}" class="h-24 rounded" style="border: 1px solid #343a40;">
+                                                <a href="{{ $attachment->url }}" class="lightbox-trigger block" data-caption="{{ $attachment->original_filename }}">
+                                                    <img src="{{ $attachment->url }}" alt="{{ $attachment->original_filename }}" class="h-24 rounded" style="border: 1px solid #343a40; cursor: zoom-in;">
                                                 </a>
                                             @else
                                                 <a href="{{ $attachment->url }}" target="_blank" class="flex items-center gap-2 text-sm px-3 py-2 rounded transition-opacity hover:opacity-80" style="background-color: #343a40; color: #8b949e;">
@@ -588,6 +619,18 @@
                                 </div>
                             @endif
 
+                            <!-- Universal Translator -->
+                            @if($isAlien)
+                                <div class="mt-4">
+                                    <button type="button"
+                                            class="alien-translate-btn text-xs px-3 py-1 rounded-full border transition-all"
+                                            style="border-color: var(--color-accent); color: var(--color-accent); background: transparent; cursor: pointer;"
+                                            data-post-id="{{ $post->id }}">
+                                        Universal Translator
+                                    </button>
+                                </div>
+                            @endif
+
                             <!-- Signature -->
                             @php $effectiveSignature = $post->author->getEffectiveSignature($reader ?? null); @endphp
                             @if($effectiveSignature)
@@ -604,7 +647,9 @@
                             @endif
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            @if($reader)
+                            @if(!$reader)
+                                <a href="{{ route('reader.login') }}" class="text-xs" style="color: #6c757d;">Log in to react or report</a>
+                            @else
                                 {{-- Reaction flyout picker --}}
                                 <div style="position: relative;"
                                      x-data='{
@@ -743,4 +788,202 @@
             </div>
         </aside>
     </div>
+
+    <!-- Lightbox -->
+    <div x-data="{ open: false, src: '', caption: '' }"
+         x-show="open"
+         x-cloak
+         x-transition:enter="transition ease-out duration-150"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-100"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @lightbox-open.window="open = true; src = $event.detail.src; caption = $event.detail.caption"
+         @keydown.escape.window="open = false"
+         @click.self="open = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="background: rgba(0,0,0,0.88);">
+        <div class="relative flex flex-col items-center max-w-full max-h-full">
+            <button @click="open = false"
+                    class="absolute -top-10 right-0 text-2xl leading-none transition-opacity hover:opacity-70"
+                    style="color: #c9d1d9;">&times;</button>
+            <img :src="src" class="max-w-full rounded-lg object-contain" style="max-height: 85vh; border: 1px solid #343a40;">
+            <p x-show="caption" x-text="caption" class="mt-3 text-sm text-center" style="color: #8b949e;"></p>
+        </div>
+    </div>
 </x-forum-layout>
+
+<script>
+(function () {
+    // Standard letters — alien fonts remap these to their own glyphs
+    const ALIEN_POOL = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz';
+
+    // Capture normal body font once so translated spans can switch to it
+    const BODY_FONT = window.getComputedStyle(document.body).fontFamily;
+
+    const FONT_MAP = {
+        lovecrafts: "'AlienLovecrafts', monospace",
+        alphacode:  "'AlienAlphacode', monospace",
+        echolot:    "'AlienEcholot', monospace",
+    };
+    const SPACING_MAP = { lovecrafts: '0.05em', alphacode: '0.08em', echolot: '0.06em' };
+    const SIZE_MAP    = { lovecrafts: '1.1em',  alphacode: '1.0em',  echolot: '1.05em' };
+
+    // Seeded LCG — stable alien words on every page load
+    function rng(seed) {
+        let s = seed >>> 0;
+        return () => { s = Math.imul(s, 1664525) + 1013904223 >>> 0; return s / 0x100000000; };
+    }
+    function wordSeed(postId, idx) {
+        return ((postId * 31337) + (idx * 1234567)) & 0x7fffffff;
+    }
+
+    // Convert one English word to alien letters with variable length (80–180%)
+    function alienWord(token, seed) {
+        const r = rng(seed);
+        const len = Math.max(1, Math.round(token.length * (0.8 + r() * 1.0)));
+        return Array.from({ length: len }, () => ALIEN_POOL[Math.floor(r() * ALIEN_POOL.length)]).join('');
+    }
+
+    // Build alien DOM: each word in a <span>; spaces are their own <span> so
+    // they (a) act as line-break opportunities and (b) always use the body font
+    // width rather than inheriting the alien/monospace font's wider space glyph.
+    function buildAlienContent(container, postId, style, originalText) {
+        const letterSpacing = SPACING_MAP[style] || '0.05em';
+        const lines = originalText.split('\n');
+        const frag  = document.createDocumentFragment();
+        let wordIdx = 0;
+
+        lines.forEach((line, lineIdx) => {
+            if (lineIdx > 0) frag.appendChild(document.createElement('br'));
+            const words = line.split(' ');
+            words.forEach((word, wi) => {
+                if (word) {
+                    const seed = wordSeed(postId, wordIdx++);
+                    const span = document.createElement('span');
+                    span.dataset.english     = word;
+                    span.dataset.alien       = alienWord(word, seed);
+                    span.textContent         = span.dataset.alien;
+                    span.style.letterSpacing = letterSpacing;
+                    frag.appendChild(span);
+                }
+                // Space span after every word except the last on the line —
+                // space character gives the browser a real wrap opportunity,
+                // explicit body font prevents the alien/monospace wide-space glyphs.
+                if (wi < words.length - 1) {
+                    const sp = document.createElement('span');
+                    sp.textContent         = ' ';
+                    sp.style.fontFamily    = BODY_FONT;
+                    sp.style.letterSpacing = '0';
+                    frag.appendChild(sp);
+                }
+            });
+        });
+
+        container.innerHTML = '';
+        container.appendChild(frag);
+    }
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // Scramble a span through random noise then snap to the English target,
+    // switching to the normal body font so the result is actually readable
+    async function scrambleSpan(span, target) {
+        const r = rng(Date.now() & 0xffffff);
+        for (let i = 8; i > 0; i--) {
+            const len = Math.max(1, target.length + Math.round((r() - 0.5) * 2));
+            span.textContent = Array.from({ length: len }, () => ALIEN_POOL[Math.floor(r() * ALIEN_POOL.length)]).join('');
+            await sleep(28);
+        }
+        span.textContent = target;
+        span.style.fontFamily    = BODY_FONT;
+        span.style.letterSpacing = 'normal';
+        span.style.fontSize      = 'inherit';
+    }
+
+    // Group word spans into sentences, splitting after words that end a sentence
+    function groupIntoSentences(spans) {
+        const sentences = [];
+        let current = [];
+        for (const span of spans) {
+            current.push(span);
+            if (/[.!?]$/.test(span.dataset.english || '')) {
+                sentences.push(current);
+                current = [];
+            }
+        }
+        if (current.length) sentences.push(current);
+        return sentences;
+    }
+
+    async function handleTranslate(btn, container, style) {
+        if (btn.dataset.animating === 'true') return;
+        const translating = btn.dataset.translated !== 'true';
+
+        if (!translating) {
+            // Revert to alien: restore container font and per-span alien styles
+            const spacing = SPACING_MAP[style] || '0.05em';
+            container.style.fontFamily = FONT_MAP[style] || FONT_MAP.lovecrafts;
+            container.style.fontSize   = SIZE_MAP[style] || '1.0em';
+            container.querySelectorAll('span[data-alien]').forEach(s => {
+                s.textContent         = s.dataset.alien;
+                s.style.fontFamily    = '';
+                s.style.letterSpacing = spacing;
+                s.style.fontSize      = '';
+            });
+            btn.textContent = 'Universal Translator';
+            btn.dataset.translated = 'false';
+            return;
+        }
+
+        btn.dataset.animating = 'true';
+        btn.textContent = 'Translating\u2026';
+        btn.disabled = true;
+
+        const wordSpans = Array.from(container.querySelectorAll('span[data-english]'));
+        const sentences = groupIntoSentences(wordSpans);
+        for (const sentence of sentences) {
+            await Promise.all(sentence.map(span => scrambleSpan(span, span.dataset.english)));
+            await sleep(120);
+        }
+
+        // Reset container font so space text nodes render in the body font
+        container.style.fontFamily = BODY_FONT;
+        container.style.fontSize   = '';
+
+        btn.textContent = 'Show Original';
+        btn.dataset.translated = 'true';
+        btn.dataset.animating  = 'false';
+        btn.disabled = false;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.alien-content').forEach(container => {
+            buildAlienContent(
+                container,
+                parseInt(container.dataset.postId, 10),
+                container.dataset.style || 'lovecrafts',
+                container.dataset.original || ''
+            );
+        });
+
+        document.querySelectorAll('.alien-translate-btn').forEach(btn => {
+            const postId    = btn.dataset.postId;
+            const container = document.querySelector(`.alien-content[data-post-id="${postId}"]`);
+            if (!container) return;
+            const style = container.dataset.style || 'lovecrafts';
+            btn.addEventListener('click', () => handleTranslate(btn, container, style));
+        });
+
+        document.querySelectorAll('a.lightbox-trigger').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent('lightbox-open', {
+                    detail: { src: link.href, caption: link.dataset.caption || '' }
+                }));
+            });
+        });
+    });
+})();
+</script>

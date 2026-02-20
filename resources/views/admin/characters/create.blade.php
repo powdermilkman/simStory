@@ -94,6 +94,27 @@
                 @enderror
             </div>
 
+            <div x-data="{ isAlien: {{ old('is_alien') ? 'true' : 'false' }} }" class="mb-4 p-4 bg-gray-50 rounded-lg">
+                <label class="flex items-center gap-2 mb-2">
+                    <input type="checkbox" name="is_alien" id="is_alien" value="1"
+                           {{ old('is_alien') ? 'checked' : '' }}
+                           @change="isAlien = $event.target.checked"
+                           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <span class="text-sm font-medium text-gray-700">Alien Character</span>
+                </label>
+                <p class="text-xs text-gray-500 mb-3">Posts by this character will display in an alien script with a translation button.</p>
+                <div x-show="isAlien">
+                    <label for="alien_style" class="block text-sm font-medium text-gray-700 mb-1">Alien Script Style</label>
+                    <select name="alien_style" id="alien_style"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">— select style —</option>
+                        <option value="lovecrafts" {{ old('alien_style') === 'lovecrafts' ? 'selected' : '' }}>Lovecraft's Diary</option>
+                        <option value="alphacode"  {{ old('alien_style') === 'alphacode'  ? 'selected' : '' }}>Alpha Code Beyond</option>
+                        <option value="echolot"    {{ old('alien_style') === 'echolot'    ? 'selected' : '' }}>Echolot</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                 <label class="flex items-center gap-2 mb-3">
                     <input type="checkbox" name="show_bytes" value="1" {{ old('show_bytes') ? 'checked' : '' }}

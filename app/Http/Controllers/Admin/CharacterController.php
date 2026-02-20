@@ -36,6 +36,8 @@ class CharacterController extends Controller
             'show_bytes' => 'boolean',
             'bytes' => 'nullable|integer|min:0|max:5',
             'bio' => 'nullable|string',
+            'is_alien' => 'nullable|boolean',
+            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot',
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -47,6 +49,8 @@ class CharacterController extends Controller
         $validated['is_official'] = $request->boolean('is_official');
         $validated['show_bytes'] = $request->boolean('show_bytes');
         $validated['bytes'] = $request->input('bytes', 0);
+        $validated['is_alien'] = $request->boolean('is_alien');
+        $validated['alien_style'] = $request->input('alien_style') ?: null;
 
         Character::create($validated);
 
@@ -80,6 +84,8 @@ class CharacterController extends Controller
             'show_bytes' => 'boolean',
             'bytes' => 'nullable|integer|min:0|max:5',
             'bio' => 'nullable|string',
+            'is_alien' => 'nullable|boolean',
+            'alien_style' => 'nullable|string|in:lovecrafts,alphacode,echolot',
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -94,6 +100,8 @@ class CharacterController extends Controller
         $validated['is_official'] = $request->boolean('is_official');
         $validated['show_bytes'] = $request->boolean('show_bytes');
         $validated['bytes'] = $request->input('bytes', 0);
+        $validated['is_alien'] = $request->boolean('is_alien');
+        $validated['alien_style'] = $request->input('alien_style') ?: null;
 
         $character->update($validated);
 
