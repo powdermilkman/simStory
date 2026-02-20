@@ -38,7 +38,7 @@
     <input type="hidden" name="has_choice" :value="enabled ? '1' : '0'">
     <input type="hidden" name="choice_id" :value="choiceId || ''">
 
-    <div x-show="enabled" x-collapse class="p-4 space-y-4">
+    <div x-show="enabled" x-transition class="p-4 space-y-4">
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
@@ -58,7 +58,7 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Prompt Text</label>
-            <input type="text" name="choice_prompt_text" x-model="promptText" required
+            <input type="text" name="choice_prompt_text" x-model="promptText"
                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                 placeholder="What will you do?">
         </div>
@@ -78,7 +78,7 @@
                     <input type="hidden" :name="'choice_options[' + index + '][id]'" :value="option.id || ''">
                     <div class="flex gap-3 mb-2">
                         <div class="flex-1">
-                            <input type="text" :name="'choice_options[' + index + '][label]'" x-model="option.label" required
+                            <input type="text" :name="'choice_options[' + index + '][label]'" x-model="option.label"
                                 placeholder="Option label"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                         </div>
