@@ -443,11 +443,11 @@
                                 <div class="alien-content"
                                      data-style="{{ $alienStyle }}"
                                      data-post-id="{{ $post->id }}"
-                                     data-original="{{ e($post->content) }}"
+                                     data-original="{{ $post->content }}"
                                      style="color: var(--color-text); line-height: 1.9;
                                             font-family: '{{ $alienFont['family'] }}', monospace;
                                             font-size: {{ $alienFont['size'] }};">
-                                    <noscript>{!! nl2br(e($post->content)) !!}</noscript>
+                                    <noscript>{!! nl2br(e(preg_replace('/<en>(.*?)<\/en>/is', '$1', $post->content))) !!}</noscript>
                                 </div>
                             @else
                                 <div style="color: var(--color-text); line-height: 1.7;">
@@ -846,21 +846,14 @@
         return Array.from({ length: len }, () => ALIEN_POOL[Math.floor(r() * ALIEN_POOL.length)]).join('');
     }
 
-    // Build alien DOM: each word in a <span>; spaces are their own <span> so
-    // they (a) act as line-break opportunities and (b) always use the body font
-    // width rather than inheriting the alien/monospace font's wider space glyph.
-    function buildAlienContent(container, postId, style, originalText) {
-        const letterSpacing = SPACING_MAP[style] || '0.05em';
-        const lines = originalText.split('\n');
-        const frag  = document.createDocumentFragment();
-        let wordIdx = 0;
-
-        lines.forEach((line, lineIdx) => {
-            if (lineIdx > 0) frag.appendChild(document.createElement('br'));
+    // Append words from a plain-text chunk as alien word spans + body-font space spans.
+    function appendAlienWords(frag, text, postId, letterSpacing, wordIdxRef) {
+        text.split('\n').forEach((line, li) => {
+            if (li > 0) frag.appendChild(document.createElement('br'));
             const words = line.split(' ');
             words.forEach((word, wi) => {
                 if (word) {
-                    const seed = wordSeed(postId, wordIdx++);
+                    const seed = wordSeed(postId, wordIdxRef.i++);
                     const span = document.createElement('span');
                     span.dataset.english     = word;
                     span.dataset.alien       = alienWord(word, seed);
@@ -868,9 +861,6 @@
                     span.style.letterSpacing = letterSpacing;
                     frag.appendChild(span);
                 }
-                // Space span after every word except the last on the line —
-                // space character gives the browser a real wrap opportunity,
-                // explicit body font prevents the alien/monospace wide-space glyphs.
                 if (wi < words.length - 1) {
                     const sp = document.createElement('span');
                     sp.textContent         = ' ';
@@ -879,6 +869,50 @@
                     frag.appendChild(sp);
                 }
             });
+        });
+    }
+
+    // Append words from an <en>…</en> segment — always shown in body font,
+    // no data-english/data-alien attributes so the translator ignores them.
+    function appendEnglishWords(frag, text) {
+        text.split('\n').forEach((line, li) => {
+            if (li > 0) frag.appendChild(document.createElement('br'));
+            const words = line.split(' ');
+            words.forEach((word, wi) => {
+                if (word) {
+                    const span = document.createElement('span');
+                    span.textContent         = word;
+                    span.style.fontFamily    = BODY_FONT;
+                    span.style.letterSpacing = 'normal';
+                    frag.appendChild(span);
+                }
+                if (wi < words.length - 1) {
+                    const sp = document.createElement('span');
+                    sp.textContent         = ' ';
+                    sp.style.fontFamily    = BODY_FONT;
+                    sp.style.letterSpacing = '0';
+                    frag.appendChild(sp);
+                }
+            });
+        });
+    }
+
+    // Build alien DOM: split on <en>…</en> tags; alien segments get scrambled
+    // glyphs, <en> segments stay in body font and are never touched by the translator.
+    function buildAlienContent(container, postId, style, originalText) {
+        const letterSpacing = SPACING_MAP[style] || '0.05em';
+        const frag          = document.createDocumentFragment();
+        const wordIdxRef    = { i: 0 }; // mutable counter shared across segments
+
+        // Split preserving the <en>…</en> delimiters
+        const parts = originalText.split(/(<en>[\s\S]*?<\/en>)/i);
+        parts.forEach(part => {
+            const enMatch = part.match(/^<en>([\s\S]*?)<\/en>$/i);
+            if (enMatch) {
+                appendEnglishWords(frag, enMatch[1]);
+            } else if (part) {
+                appendAlienWords(frag, part, postId, letterSpacing, wordIdxRef);
+            }
         });
 
         container.innerHTML = '';
