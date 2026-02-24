@@ -196,7 +196,6 @@
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="">Select type...</option>
                                             <option value="send_message">Send Message to Reader</option>
-                                            <option value="unlock_content">Unlock Content</option>
                                             <option value="modify_character">Modify Character</option>
                                             <option value="trigger_phase">Trigger Another Phase</option>
                                         </select>
@@ -239,44 +238,6 @@
                                             <input type="datetime-local" :name="'actions[' + index + '][action_data][fake_sent_at]'" x-model="action.msg_fake_sent_at"
                                                 x-bind:disabled="action.type !== 'send_message'"
                                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                        </div>
-                                    </div>
-
-                                    <!-- Unlock Content Fields -->
-                                    <div x-show="action.type === 'unlock_content'" class="space-y-3 bg-green-50 rounded-lg p-4">
-                                        <p class="text-xs text-green-700 font-medium uppercase tracking-wide">Content to Unlock</p>
-                                        <input type="hidden" :name="'actions[' + index + '][action_data][clear_visibility_requirements]'" value="1" x-bind:disabled="action.type !== 'unlock_content'">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
-                                            <select :name="'actions[' + index + '][target_type]'" x-model="action.target_type"
-                                                x-bind:disabled="action.type !== 'unlock_content'"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                                <option value="">Select type...</option>
-                                                <option value="thread">Thread</option>
-                                                <option value="post">Post</option>
-                                            </select>
-                                        </div>
-                                        <div x-show="action.target_type === 'thread'">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Thread</label>
-                                            <select :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
-                                                x-bind:disabled="action.type !== 'unlock_content' || action.target_type !== 'thread'"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                                <option value="">Select thread...</option>
-                                                @foreach($threads as $thread)
-                                                    <option value="{{ $thread->id }}">{{ $thread->title }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div x-show="action.target_type === 'post'">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Post</label>
-                                            <select :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
-                                                x-bind:disabled="action.type !== 'unlock_content' || action.target_type !== 'post'"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
-                                                <option value="">Select post...</option>
-                                                @foreach($posts as $post)
-                                                    <option value="{{ $post->id }}">#{{ $post->id }} - {{ Str::limit(strip_tags($post->content), 50) }} ({{ $post->thread->title }})</option>
-                                                @endforeach
-                                            </select>
                                         </div>
                                     </div>
 

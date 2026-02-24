@@ -134,6 +134,18 @@ class PhaseCondition extends Model
                 $thread = Thread::find($this->target_id);
                 return "{$typeLabel}: " . ($thread?->title ?? "#{$this->target_id}");
 
+            case self::TYPE_VIEW_POST:
+            case self::TYPE_REACT_POST:
+            case self::TYPE_REPORT_POST:
+                $post = Post::find($this->target_id);
+                $title = $post?->thread?->title ?? null;
+                $label = $title ? "\"{$title}\" (post #{$this->target_id})" : "post #{$this->target_id}";
+                return "{$typeLabel}: {$label}";
+
+            case self::TYPE_VIEW_THREAD:
+                $thread = Thread::find($this->target_id);
+                return "{$typeLabel}: " . ($thread?->title ?? "thread #{$this->target_id}");
+
             default:
                 return "{$typeLabel}: {$this->target_type} #{$this->target_id}";
         }

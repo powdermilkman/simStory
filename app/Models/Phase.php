@@ -48,6 +48,21 @@ class Phase extends Model
         return $this->hasMany(ReaderPhaseProgress::class);
     }
 
+    public function gatedThreads(): HasMany
+    {
+        return $this->hasMany(Thread::class);
+    }
+
+    public function gatedPosts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function gatedMessages(): HasMany
+    {
+        return $this->hasMany(PrivateMessage::class);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'identifier';

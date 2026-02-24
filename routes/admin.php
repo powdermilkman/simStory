@@ -34,6 +34,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('triggers', ContentTriggerController::class);
     Route::resource('private-messages', PrivateMessageController::class);
     Route::resource('readers', ReaderController::class)->only(['index', 'show', 'destroy']);
+    Route::get('phases/timeline', [PhaseController::class, 'timeline'])->name('phases.timeline');
     Route::resource('phases', PhaseController::class);
     Route::resource('users', UserController::class)->except(['show']);
 

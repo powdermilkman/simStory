@@ -2,9 +2,14 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Phases</h2>
-            <a href="{{ route('admin.phases.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                + New Phase
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('admin.phases.timeline') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
+                    Timeline
+                </a>
+                <a href="{{ route('admin.phases.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm">
+                    + New Phase
+                </a>
+            </div>
         </div>
     </x-slot>
 

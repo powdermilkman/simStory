@@ -205,6 +205,35 @@ class PhaseController extends Controller
             ->with('success', 'Phase updated successfully.');
     }
 
+    public function timeline()
+    {
+        $phases = Phase::with([
+            'conditions',
+            'actions',
+            'readerProgress',
+            'gatedThreads.category',
+            'gatedPosts.thread',
+            'gatedMessages.sender',
+            'childPhases.conditions',
+            'childPhases.actions',
+            'childPhases.readerProgress',
+            'childPhases.gatedThreads.category',
+            'childPhases.gatedPosts.thread',
+            'childPhases.gatedMessages.sender',
+            'childPhases.childPhases.conditions',
+            'childPhases.childPhases.actions',
+            'childPhases.childPhases.readerProgress',
+            'childPhases.childPhases.gatedThreads.category',
+            'childPhases.childPhases.gatedPosts.thread',
+            'childPhases.childPhases.gatedMessages.sender',
+        ])
+            ->whereNull('parent_phase_id')
+            ->orderBy('sort_order')
+            ->get();
+
+        return view('admin.phases.timeline', compact('phases'));
+    }
+
     public function destroy(Phase $phase)
     {
         $phase->delete();

@@ -20,14 +20,12 @@ class PhaseAction extends Model
         'action_data' => 'array',
     ];
 
-    public const TYPE_UNLOCK_CONTENT = 'unlock_content';
     public const TYPE_MODIFY_CHARACTER = 'modify_character';
     public const TYPE_SEND_MESSAGE = 'send_message';
     public const TYPE_TRIGGER_PHASE = 'trigger_phase';
 
     public const TYPES = [
         self::TYPE_MODIFY_CHARACTER => 'Modify Character',
-        self::TYPE_UNLOCK_CONTENT => 'Unlock Content',
         self::TYPE_SEND_MESSAGE => 'Send Message',
         self::TYPE_TRIGGER_PHASE => 'Trigger Another Phase',
     ];
@@ -40,10 +38,6 @@ class PhaseAction extends Model
     public function execute(Reader $reader): void
     {
         switch ($this->type) {
-            case self::TYPE_UNLOCK_CONTENT:
-                $this->executeUnlockContent();
-                break;
-
             case self::TYPE_MODIFY_CHARACTER:
                 // No-op: Character modifications are computed dynamically at render time
                 // by PhaseActionResolver based on completed phases. This allows admin
@@ -57,35 +51,6 @@ class PhaseAction extends Model
             case self::TYPE_TRIGGER_PHASE:
                 $this->executeTriggerPhase($reader);
                 break;
-        }
-    }
-
-    protected function executeUnlockContent(): void
-    {
-        if (!$this->target_type || !$this->target_id) {
-            return;
-        }
-
-        $data = $this->action_data ?? [];
-        if (!($data['clear_visibility_requirements'] ?? false)) {
-            return;
-        }
-
-        $model = null;
-        switch ($this->target_type) {
-            case 'thread':
-                $model = Thread::find($this->target_id);
-                break;
-            case 'post':
-                $model = Post::find($this->target_id);
-                break;
-            case 'message':
-                $model = PrivateMessage::find($this->target_id);
-                break;
-        }
-
-        if ($model) {
-            $model->update(['phase_id' => null]);
         }
     }
 
@@ -169,6 +134,11 @@ class PhaseAction extends Model
             case self::TYPE_TRIGGER_PHASE:
                 $phase = Phase::find($data['phase_id'] ?? 0);
                 return "{$typeLabel}: {$phase?->name}";
+
+            case self::TYPE_SEND_MESSAGE:
+                $msgId = $data['private_message_id'] ?? null;
+                $subject = $msgId ? (PrivateMessage::find($msgId)?->subject ?? 'Unknown') : 'Unknown';
+                return "{$typeLabel}: \"{$subject}\"";
 
             default:
                 return "{$typeLabel}: {$this->target_type} #{$this->target_id}";
