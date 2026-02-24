@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Models\ChoiceOption;
-use App\Models\ContentTrigger;
 use App\Models\Phase;
 use App\Models\PhaseAction;
 use App\Models\PhaseCondition;
@@ -34,21 +33,17 @@ class PhaseController extends Controller
     public function create()
     {
         $parentPhases = Phase::orderBy('sort_order')->get();
-        $triggers = ContentTrigger::orderBy('name')->get();
         $threads = Thread::orderBy('title')->get();
         $posts = Post::with('thread')->orderBy('id')->get();
         $choiceOptions = ChoiceOption::with('choice')->get();
         $characters = Character::orderBy('display_name')->get();
-        $privateMessages = PrivateMessage::orderBy('subject')->get();
 
         return view('admin.phases.create', compact(
             'parentPhases',
-            'triggers',
             'threads',
             'posts',
             'choiceOptions',
-            'characters',
-            'privateMessages'
+            'characters'
         ));
     }
 
@@ -95,6 +90,8 @@ class PhaseController extends Controller
             foreach ($request->input('actions', []) as $index => $actionData) {
                 if (empty($actionData['type'])) continue;
 
+                $actionData = $this->resolveActionData($actionData);
+
                 PhaseAction::create([
                     'phase_id' => $phase->id,
                     'type' => $actionData['type'],
@@ -125,23 +122,19 @@ class PhaseController extends Controller
         $phase->load(['conditions', 'actions']);
 
         $parentPhases = Phase::where('id', '!=', $phase->id)->orderBy('sort_order')->get();
-        $triggers = ContentTrigger::orderBy('name')->get();
         $threads = Thread::orderBy('title')->get();
         $posts = Post::with('thread')->orderBy('id')->get();
         $choiceOptions = ChoiceOption::with('choice')->get();
         $characters = Character::orderBy('display_name')->get();
-        $privateMessages = PrivateMessage::orderBy('subject')->get();
         $allPhases = Phase::where('id', '!=', $phase->id)->orderBy('sort_order')->get();
 
         return view('admin.phases.edit', compact(
             'phase',
             'parentPhases',
-            'triggers',
             'threads',
             'posts',
             'choiceOptions',
             'characters',
-            'privateMessages',
             'allPhases'
         ));
     }
@@ -195,6 +188,8 @@ class PhaseController extends Controller
             foreach ($request->input('actions', []) as $index => $actionData) {
                 if (empty($actionData['type'])) continue;
 
+                $actionData = $this->resolveActionData($actionData);
+
                 PhaseAction::create([
                     'phase_id' => $phase->id,
                     'type' => $actionData['type'],
@@ -216,5 +211,38 @@ class PhaseController extends Controller
 
         return redirect()->route('admin.phases.index')
             ->with('success', 'Phase deleted successfully.');
+    }
+
+    /**
+     * For send_message actions, create or update the PrivateMessage template
+     * from the inline form data and replace action_data with the message ID.
+     */
+    private function resolveActionData(array $actionData): array
+    {
+        if ($actionData['type'] !== 'send_message') {
+            return $actionData;
+        }
+
+        $msgData = $actionData['action_data'] ?? [];
+        $existingId = !empty($msgData['existing_private_message_id']) ? (int) $msgData['existing_private_message_id'] : null;
+
+        $messageFields = [
+            'sender_id' => $msgData['sender_id'] ?? null,
+            'subject' => $msgData['subject'] ?? '',
+            'content' => $msgData['content'] ?? '',
+            'fake_sent_at' => !empty($msgData['fake_sent_at']) ? $msgData['fake_sent_at'] : null,
+            'is_inbox_message' => false,
+            'is_read' => false,
+        ];
+
+        if ($existingId && $msg = PrivateMessage::find($existingId)) {
+            $msg->update($messageFields);
+        } else {
+            $msg = PrivateMessage::create($messageFields);
+        }
+
+        $actionData['action_data'] = ['private_message_id' => $msg->id];
+
+        return $actionData;
     }
 }

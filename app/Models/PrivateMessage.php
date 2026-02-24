@@ -45,4 +45,9 @@ class PrivateMessage extends Model
     {
         return $query->where('is_inbox_message', false)->whereNotNull('recipient_id');
     }
+
+    public function phase(): BelongsTo
+    {
+        return $this->belongsTo(Phase::class);
+    }
 }

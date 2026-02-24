@@ -22,8 +22,8 @@
                             <a href="{{ route('admin.posts.show', $post) }}" class="text-blue-600 hover:underline">
                                 {{ Str::limit(strip_tags($post->content), 60) }}
                             </a>
-                            @if($post->phase_id)
-                                <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                            @if($post->phase)
+                                <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $post->phase->name }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
@@ -65,8 +65,8 @@
                     <a href="{{ route('admin.posts.show', $post) }}" class="font-medium text-blue-600 hover:underline">
                         {{ Str::limit(strip_tags($post->content), 80) }}
                     </a>
-                    @if($post->phase_id)
-                        <span class="ml-1 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                    @if($post->phase)
+                        <span class="ml-1 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $post->phase->name }}</span>
                     @endif
                 </div>
                 <div class="text-sm text-gray-500 space-y-0.5">

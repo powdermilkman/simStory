@@ -33,6 +33,11 @@ class Thread extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function phase(): BelongsTo
+    {
+        return $this->belongsTo(Phase::class);
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(Character::class, 'author_id');

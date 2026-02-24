@@ -13,7 +13,7 @@ class ThreadController extends Controller
 {
     public function index()
     {
-        $threads = Thread::with(['category', 'author'])
+        $threads = Thread::with(['category', 'author', 'phase'])
             ->latest()
             ->paginate(config('pagination.admin'));
 
@@ -66,7 +66,7 @@ class ThreadController extends Controller
 
     public function show(Thread $thread)
     {
-        $thread->load(['category', 'author', 'posts.author', 'posts.choice']);
+        $thread->load(['category', 'author', 'posts.author', 'posts.choice', 'posts.phase']);
 
         return view('admin.threads.show', compact('thread'));
     }

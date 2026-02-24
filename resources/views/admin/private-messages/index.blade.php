@@ -26,8 +26,8 @@
                             <a href="{{ route('admin.private-messages.show', $message) }}" class="text-blue-600 hover:underline font-medium">
                                 {{ $message->subject }}
                             </a>
-                            @if($message->phase_id)
-                                <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                            @if($message->phase)
+                                <span class="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $message->phase->name }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">

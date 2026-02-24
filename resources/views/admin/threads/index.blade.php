@@ -39,8 +39,8 @@
                                 @if($thread->is_locked)
                                     <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Locked</span>
                                 @endif
-                                @if($thread->phase_id)
-                                    <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                                @if($thread->phase)
+                                    <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $thread->phase->name }}</span>
                                 @endif
                             </div>
                         </td>
@@ -88,8 +88,8 @@
                         @if($thread->is_locked)
                             <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded">Locked</span>
                         @endif
-                        @if($thread->phase_id)
-                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                        @if($thread->phase)
+                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $thread->phase->name }}</span>
                         @endif
                     </div>
                 </div>

@@ -98,27 +98,13 @@
                                         <select :name="'conditions[' + index + '][type]'" x-model="condition.type"
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="">Select type...</option>
-                                            <option value="trigger">Trigger Completed</option>
-                                            <option value="choice">Choice Made</option>
                                             <option value="view_post">Post Viewed</option>
-                                            <option value="view_thread">Thread Viewed</option>
                                             <option value="react_post">Post Reacted To</option>
-                                            <option value="all_posts_in_thread">All Posts in Thread Viewed</option>
                                             <option value="report_post">Post Reported</option>
+                                            <option value="view_thread">Thread Viewed</option>
+                                            <option value="all_posts_in_thread">All Posts in Thread Viewed</option>
+                                            <option value="choice">Choice Made</option>
                                             <option value="phase_complete">Other Phase Complete</option>
-                                        </select>
-                                    </div>
-
-                                    <div x-show="condition.type === 'trigger'">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Trigger</label>
-                                        <input type="hidden" :name="'conditions[' + index + '][target_type]'" value="trigger" x-bind:disabled="condition.type !== 'trigger'">
-                                        <select :name="'conditions[' + index + '][target_id]'" x-model="condition.target_id"
-                                            x-bind:disabled="condition.type !== 'trigger'"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                            <option value="">Select trigger...</option>
-                                            @foreach($triggers as $trigger)
-                                                <option value="{{ $trigger->id }}">{{ $trigger->name }}</option>
-                                            @endforeach
                                         </select>
                                     </div>
 
@@ -142,7 +128,7 @@
                                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                             <option value="">Select post...</option>
                                             @foreach($posts as $post)
-                                                <option value="{{ $post->id }}">#{{ $post->id }} - {{ Str::limit($post->content, 40) }}</option>
+                                                <option value="{{ $post->id }}">#{{ $post->id }} - {{ Str::limit(strip_tags($post->content), 50) }} ({{ $post->thread->title }})</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -190,7 +176,7 @@
                             + Add Action
                         </button>
                     </div>
-                    <p class="text-sm text-gray-500 mb-4">Actions execute when all conditions are met.</p>
+                    <p class="text-sm text-gray-500 mb-4">Actions execute in order when all conditions are met.</p>
 
                     <div class="space-y-4">
                         <template x-for="(action, index) in actions" :key="action.id">
@@ -203,39 +189,117 @@
                                 </button>
 
                                 <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Action Type</label>
+                                        <select :name="'actions[' + index + '][type]'" x-model="action.type"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="">Select type...</option>
+                                            <option value="send_message">Send Message to Reader</option>
+                                            <option value="unlock_content">Unlock Content</option>
+                                            <option value="modify_character">Modify Character</option>
+                                            <option value="trigger_phase">Trigger Another Phase</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Send Message Fields -->
+                                    <div x-show="action.type === 'send_message'" class="space-y-3 bg-blue-50 rounded-lg p-4">
+                                        <p class="text-xs text-blue-700 font-medium uppercase tracking-wide">Message Details</p>
+                                        <input type="hidden" :name="'actions[' + index + '][action_data][existing_private_message_id]'" :value="action.existing_private_message_id" x-bind:disabled="action.type !== 'send_message'">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                                <input type="text" :name="'actions[' + index + '][action_data][subject]'" x-model="action.msg_subject"
+                                                    x-bind:disabled="action.type !== 'send_message'"
+                                                    placeholder="Message subject..."
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">From Character</label>
+                                                <select :name="'actions[' + index + '][action_data][sender_id]'" x-model="action.msg_sender_id"
+                                                    x-bind:disabled="action.type !== 'send_message'"
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                                    <option value="">Select sender...</option>
+                                                    @foreach($characters as $character)
+                                                        <option value="{{ $character->id }}">{{ $character->display_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                                            <select :name="'actions[' + index + '][type]'" x-model="action.type"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Message Content</label>
+                                            <textarea :name="'actions[' + index + '][action_data][content]'" x-model="action.msg_content"
+                                                x-bind:disabled="action.type !== 'send_message'"
+                                                rows="4"
+                                                placeholder="Write the message here..."
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"></textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Fake Sent Date <span class="text-gray-400 font-normal">(optional)</span></label>
+                                            <input type="datetime-local" :name="'actions[' + index + '][action_data][fake_sent_at]'" x-model="action.msg_fake_sent_at"
+                                                x-bind:disabled="action.type !== 'send_message'"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                        </div>
+                                    </div>
+
+                                    <!-- Unlock Content Fields -->
+                                    <div x-show="action.type === 'unlock_content'" class="space-y-3 bg-green-50 rounded-lg p-4">
+                                        <p class="text-xs text-green-700 font-medium uppercase tracking-wide">Content to Unlock</p>
+                                        <input type="hidden" :name="'actions[' + index + '][action_data][clear_visibility_requirements]'" value="1" x-bind:disabled="action.type !== 'unlock_content'">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                                            <select :name="'actions[' + index + '][target_type]'" x-model="action.target_type"
+                                                x-bind:disabled="action.type !== 'unlock_content'"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                                 <option value="">Select type...</option>
-                                                <option value="modify_character">Modify Character</option>
-                                                <option value="unlock_content">Unlock Content</option>
-                                                <option value="send_message">Send Message</option>
-                                                <option value="trigger_phase">Trigger Another Phase</option>
+                                                <option value="thread">Thread</option>
+                                                <option value="post">Post</option>
                                             </select>
                                         </div>
-
-                                        <div x-show="action.type === 'modify_character'">
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Character</label>
-                                            <input type="hidden" :name="'actions[' + index + '][target_type]'" value="character" x-bind:disabled="action.type !== 'modify_character'">
+                                        <div x-show="action.target_type === 'thread'">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Thread</label>
                                             <select :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                                <option value="">Select character...</option>
-                                                @foreach($characters as $character)
-                                                    <option value="{{ $character->id }}">{{ $character->display_name }}</option>
+                                                x-bind:disabled="action.type !== 'unlock_content' || action.target_type !== 'thread'"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                                <option value="">Select thread...</option>
+                                                @foreach($threads as $thread)
+                                                    <option value="{{ $thread->id }}">{{ $thread->title }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div x-show="action.target_type === 'post'">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Post</label>
+                                            <select :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
+                                                x-bind:disabled="action.type !== 'unlock_content' || action.target_type !== 'post'"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                                <option value="">Select post...</option>
+                                                @foreach($posts as $post)
+                                                    <option value="{{ $post->id }}">#{{ $post->id }} - {{ Str::limit(strip_tags($post->content), 50) }} ({{ $post->thread->title }})</option>
                                                 @endforeach
                                             </select>
                                         </div>
                                     </div>
 
                                     <!-- Modify Character Fields -->
-                                    <div x-show="action.type === 'modify_character'" class="space-y-4">
-                                        <div class="grid grid-cols-2 gap-4">
+                                    <div x-show="action.type === 'modify_character'" class="space-y-3 bg-purple-50 rounded-lg p-4">
+                                        <p class="text-xs text-purple-700 font-medium uppercase tracking-wide">Character Modification</p>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Character</label>
+                                                <input type="hidden" :name="'actions[' + index + '][target_type]'" value="character" x-bind:disabled="action.type !== 'modify_character'">
+                                                <select :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
+                                                    x-bind:disabled="action.type !== 'modify_character'"
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                                    <option value="">Select character...</option>
+                                                    @foreach($characters as $character)
+                                                        <option value="{{ $character->id }}">{{ $character->display_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-1">Field</label>
                                                 <select :name="'actions[' + index + '][action_data][field]'" x-model="action.field"
-                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                                    x-bind:disabled="action.type !== 'modify_character'"
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                                     <option value="">Select field...</option>
                                                     <option value="bytes">Bytes (0-5)</option>
                                                     <option value="role_title">Role Title</option>
@@ -244,76 +308,42 @@
                                                     <option value="is_official">Is Official</option>
                                                 </select>
                                             </div>
-                                            <div x-show="action.field !== 'bytes'">
-                                                <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                                                <input type="text" :name="'actions[' + index + '][action_data][value]'" x-model="action.value"
-                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                            </div>
                                         </div>
-                                        <!-- Bytes-specific fields -->
-                                        <div x-show="action.field === 'bytes'" class="grid grid-cols-2 gap-4">
+                                        <div x-show="action.field && action.field !== 'bytes'">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
+                                            <input type="text" :name="'actions[' + index + '][action_data][value]'" x-model="action.value"
+                                                x-bind:disabled="action.type !== 'modify_character'"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                        </div>
+                                        <div x-show="action.field === 'bytes'" class="grid grid-cols-2 gap-3">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-1">Operation</label>
                                                 <select :name="'actions[' + index + '][action_data][bytes_operation]'" x-model="action.bytes_operation"
-                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                                    x-bind:disabled="action.type !== 'modify_character'"
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                                     <option value="set">Set to value</option>
                                                     <option value="add">Add/Subtract</option>
                                                 </select>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                                                    <span x-show="action.bytes_operation !== 'add'">Value (0-5)</span>
-                                                    <span x-show="action.bytes_operation === 'add'">Amount (-5 to +5)</span>
+                                                    <span x-show="action.bytes_operation !== 'add'">Value (0–5)</span>
+                                                    <span x-show="action.bytes_operation === 'add'">Amount (−5 to +5)</span>
                                                 </label>
                                                 <input type="number" :name="'actions[' + index + '][action_data][value]'" x-model="action.value"
                                                     :min="action.bytes_operation === 'add' ? -5 : 0" max="5"
-                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                                    x-bind:disabled="action.type !== 'modify_character'"
+                                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Unlock Content Fields -->
-                                    <div x-show="action.type === 'unlock_content'" class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
-                                            <select :name="'actions[' + index + '][target_type]'" x-model="action.target_type"
-                                                x-bind:disabled="action.type !== 'unlock_content'"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                                <option value="">Select type...</option>
-                                                <option value="thread">Thread</option>
-                                                <option value="post">Post</option>
-                                                <option value="message">Message</option>
-                                            </select>
-                                            <input type="hidden" :name="'actions[' + index + '][action_data][clear_visibility_requirements]'" value="1" x-bind:disabled="action.type !== 'unlock_content'">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Content ID</label>
-                                            <input type="number" :name="'actions[' + index + '][target_id]'" x-model="action.target_id"
-                                                x-bind:disabled="action.type !== 'unlock_content'"
-                                                placeholder="Enter ID"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        </div>
-                                    </div>
-
-                                    <!-- Send Message Fields -->
-                                    <div x-show="action.type === 'send_message'">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Message Template</label>
-                                        <select :name="'actions[' + index + '][action_data][private_message_id]'" x-model="action.private_message_id"
-                                            x-bind:disabled="action.type !== 'send_message'"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                            <option value="">Select message...</option>
-                                            @foreach($privateMessages as $msg)
-                                                <option value="{{ $msg->id }}">{{ $msg->subject }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-
                                     <!-- Trigger Phase Fields -->
-                                    <div x-show="action.type === 'trigger_phase'">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Phase to Trigger</label>
+                                    <div x-show="action.type === 'trigger_phase'" class="bg-yellow-50 rounded-lg p-4">
+                                        <p class="text-xs text-yellow-700 font-medium uppercase tracking-wide mb-3">Phase to Force-Complete</p>
                                         <select :name="'actions[' + index + '][action_data][phase_id]'" x-model="action.phase_id"
                                             x-bind:disabled="action.type !== 'trigger_phase'"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
                                             <option value="">Select phase...</option>
                                             @foreach($allPhases as $p)
                                                 <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -361,19 +391,38 @@
                 'choice_option_id' => (string) $c->choice_option_id,
             ];
         })->values();
+
         $actionsData = $phase->actions->map(function($a) {
-            return [
+            $data = [
                 'type' => $a->type,
-                'target_type' => $a->target_type,
-                'target_id' => (string) $a->target_id,
+                'target_type' => $a->target_type ?? '',
+                'target_id' => (string) ($a->target_id ?? ''),
                 'field' => $a->action_data['field'] ?? '',
                 'value' => $a->action_data['value'] ?? '',
                 'bytes_operation' => $a->action_data['bytes_operation'] ?? 'set',
-                'private_message_id' => (string) ($a->action_data['private_message_id'] ?? ''),
                 'phase_id' => (string) ($a->action_data['phase_id'] ?? ''),
+                'existing_private_message_id' => '',
+                'msg_subject' => '',
+                'msg_sender_id' => '',
+                'msg_content' => '',
+                'msg_fake_sent_at' => '',
             ];
+
+            if ($a->type === 'send_message' && !empty($a->action_data['private_message_id'])) {
+                $msg = \App\Models\PrivateMessage::find($a->action_data['private_message_id']);
+                if ($msg) {
+                    $data['existing_private_message_id'] = (string) $msg->id;
+                    $data['msg_subject'] = $msg->subject ?? '';
+                    $data['msg_sender_id'] = (string) ($msg->sender_id ?? '');
+                    $data['msg_content'] = $msg->content ?? '';
+                    $data['msg_fake_sent_at'] = $msg->fake_sent_at?->format('Y-m-d\TH:i') ?? '';
+                }
+            }
+
+            return $data;
         })->values();
     @endphp
+
     <script>
         function phaseForm() {
             let conditionId = 0;
@@ -407,8 +456,12 @@
                         field: '',
                         value: '',
                         bytes_operation: 'set',
-                        private_message_id: '',
-                        phase_id: ''
+                        phase_id: '',
+                        existing_private_message_id: '',
+                        msg_subject: '',
+                        msg_sender_id: '',
+                        msg_content: '',
+                        msg_fake_sent_at: ''
                     });
                 },
                 removeAction(id) {

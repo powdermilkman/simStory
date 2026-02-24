@@ -64,21 +64,17 @@
                        class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.threads.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
                         Threads
                     </a>
-                    <a href="{{ route('admin.triggers.index') }}" @click="drawerOpen = false"
-                       class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.triggers.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
-                        Triggers
-                    </a>
                     <a href="{{ route('admin.phases.index') }}" @click="drawerOpen = false"
                        class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.phases.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
                         Phases
                     </a>
-                    <a href="{{ route('admin.private-messages.index') }}" @click="drawerOpen = false"
-                       class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.private-messages.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
-                        Messages
-                    </a>
                     <a href="{{ route('admin.readers.index') }}" @click="drawerOpen = false"
                        class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.readers.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
                         Readers
+                    </a>
+                    <a href="{{ route('admin.users.index') }}" @click="drawerOpen = false"
+                       class="block px-3 py-2 rounded text-sm hover:bg-gray-700 hover:text-white {{ request()->routeIs('admin.users.*') ? 'bg-gray-900 text-white' : 'text-gray-300' }}">
+                        Users
                     </a>
                 </nav>
 
@@ -125,17 +121,14 @@
                                 <a href="{{ route('admin.threads.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.threads.*') ? 'bg-gray-900' : '' }}">
                                     Threads
                                 </a>
-                                <a href="{{ route('admin.triggers.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.triggers.*') ? 'bg-gray-900' : '' }}">
-                                    Triggers
-                                </a>
                                 <a href="{{ route('admin.phases.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.phases.*') ? 'bg-gray-900' : '' }}">
                                     Phases
                                 </a>
-                                <a href="{{ route('admin.private-messages.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.private-messages.*') ? 'bg-gray-900' : '' }}">
-                                    Messages
-                                </a>
                                 <a href="{{ route('admin.readers.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.readers.*') ? 'bg-gray-900' : '' }}">
                                     Readers
+                                </a>
+                                <a href="{{ route('admin.users.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 {{ request()->routeIs('admin.users.*') ? 'bg-gray-900' : '' }}">
+                                    Users
                                 </a>
                             </div>
                         </div>

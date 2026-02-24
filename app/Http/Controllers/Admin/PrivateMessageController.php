@@ -11,7 +11,7 @@ class PrivateMessageController extends Controller
 {
     public function index()
     {
-        $messages = PrivateMessage::with(['sender', 'recipient'])
+        $messages = PrivateMessage::with(['sender', 'recipient', 'phase'])
             ->latest('fake_sent_at')
             ->paginate(config('pagination.admin'));
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ThreadController;
 use App\Http\Controllers\Admin\AttachmentController;
 use App\Http\Controllers\Admin\PhaseController;
 use App\Http\Controllers\Admin\ThreadComposerController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\Api\SearchController;
 use App\Http\Controllers\Admin\Api\PreviewController;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('private-messages', PrivateMessageController::class);
     Route::resource('readers', ReaderController::class)->only(['index', 'show', 'destroy']);
     Route::resource('phases', PhaseController::class);
+    Route::resource('users', UserController::class)->except(['show']);
 
     // Nested routes for posts within threads
     Route::get('threads/{thread}/posts/create', [PostController::class, 'create'])->name('threads.posts.create');

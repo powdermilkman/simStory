@@ -15,7 +15,7 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with(['thread', 'author'])
+        $posts = Post::with(['thread', 'author', 'phase'])
             ->latest()
             ->paginate(config('pagination.admin'));
 

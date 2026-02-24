@@ -69,8 +69,8 @@
                                 @endif
                             </div>
                             <div class="flex gap-2">
-                                @if($post->phase_id)
-                                    <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase-gated</span>
+                                @if($post->phase)
+                                    <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">Phase: {{ $post->phase->name }}</span>
                                 @endif
                                 @if($post->choice)
                                     <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">Has Choice</span>

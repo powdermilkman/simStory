@@ -227,16 +227,18 @@
             padding: 0 2px;
             border-radius: 6px;
             clip-path: inset(-1px round 7px);
-        }
-        .spoiler:not(.revealed) {
             box-shadow: inset 0 0 0 1px var(--color-border, #343a40);
             background: rgba(0, 0, 0, 0.45);
+            transition: background 0.4s ease;
+        }
+        .spoiler * {
+            filter: blur(5px);
+            transition: filter 0.4s ease;
         }
         .spoiler:not(.revealed) * {
-            filter: blur(5px);
             user-select: none;
         }
-        .spoiler:not(.revealed)::before {
+        .spoiler::before {
             content: "Spoiler";
             position: absolute;
             top: 50%;
@@ -250,9 +252,17 @@
             color: var(--color-text);
             pointer-events: none;
             user-select: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
         .spoiler.revealed {
-            box-shadow: inset 0 0 0 1px var(--color-border, #343a40);
+            background: transparent;
+        }
+        .spoiler.revealed * {
+            filter: blur(0);
+        }
+        .spoiler.revealed::before {
+            opacity: 0;
         }
 
         .breadcrumb-nav {
