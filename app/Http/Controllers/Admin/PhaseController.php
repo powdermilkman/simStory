@@ -10,12 +10,16 @@ use App\Models\PhaseAction;
 use App\Models\PhaseCondition;
 use App\Models\Post;
 use App\Models\PrivateMessage;
+use App\Models\Reader;
 use App\Models\Thread;
+use App\Services\PhaseProgressService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class PhaseController extends Controller
 {
+    public function __construct(private PhaseProgressService $progressService) {}
+
     public function index()
     {
         $phases = Phase::with(['parentPhase', 'childPhases', 'conditions', 'actions'])
@@ -109,7 +113,11 @@ class PhaseController extends Controller
 
     public function show(Phase $phase)
     {
-        $phase->load(['parentPhase', 'childPhases', 'conditions', 'actions', 'readerProgress.reader']);
+        $phase->load([
+            'parentPhase', 'childPhases', 'conditions', 'actions',
+            'readerProgress.reader',
+            'gatedThreads.category', 'gatedPosts.thread', 'gatedMessages.sender',
+        ]);
 
         $completedCount = $phase->readerProgress->where('status', 'completed')->count();
         $inProgressCount = $phase->readerProgress->where('status', 'in_progress')->count();
@@ -121,6 +129,10 @@ class PhaseController extends Controller
     {
         $phase->load(['conditions', 'actions']);
 
+        $msgIds = $phase->actions->where('type', PhaseAction::TYPE_SEND_MESSAGE)
+            ->pluck('action_data.private_message_id')->filter()->unique();
+        $linkedMessages = PrivateMessage::whereIn('id', $msgIds)->get()->keyBy('id');
+
         $parentPhases = Phase::where('id', '!=', $phase->id)->orderBy('sort_order')->get();
         $threads = Thread::orderBy('title')->get();
         $posts = Post::with('thread')->orderBy('id')->get();
@@ -130,6 +142,7 @@ class PhaseController extends Controller
 
         return view('admin.phases.edit', compact(
             'phase',
+            'linkedMessages',
             'parentPhases',
             'threads',
             'posts',
@@ -232,6 +245,22 @@ class PhaseController extends Controller
             ->get();
 
         return view('admin.phases.timeline', compact('phases'));
+    }
+
+    public function progressComplete(Phase $phase, Reader $reader)
+    {
+        $this->progressService->forceCompletePhase($reader, $phase);
+
+        return redirect()->route('admin.phases.show', $phase)
+            ->with('success', "Phase marked complete for {$reader->username}.");
+    }
+
+    public function progressReset(Phase $phase, Reader $reader)
+    {
+        $this->progressService->resetPhaseProgress($reader, $phase);
+
+        return redirect()->route('admin.phases.show', $phase)
+            ->with('success', "Phase progress reset for {$reader->username}.");
     }
 
     public function destroy(Phase $phase)

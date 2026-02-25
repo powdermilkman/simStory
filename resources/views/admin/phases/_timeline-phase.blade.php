@@ -64,9 +64,25 @@
                 @else
                     <ul class="space-y-1.5">
                         @foreach($phase->conditions as $condition)
+                            @php
+                                $conditionUrl = null;
+                                if (in_array($condition->type, ['view_post', 'react_post', 'report_post']) && $condition->target_id) {
+                                    $conditionUrl = route('admin.posts.show', $condition->target_id);
+                                } elseif (in_array($condition->type, ['view_thread', 'all_posts_in_thread']) && $condition->target_id) {
+                                    $linkedThread = \App\Models\Thread::find($condition->target_id);
+                                    $conditionUrl = $linkedThread ? route('admin.threads.show', $linkedThread) : null;
+                                } elseif ($condition->type === 'phase_complete' && $condition->target_id) {
+                                    $linkedPhase = \App\Models\Phase::find($condition->target_id);
+                                    $conditionUrl = $linkedPhase ? route('admin.phases.show', $linkedPhase) : null;
+                                }
+                            @endphp
                             <li class="flex items-start gap-2 text-sm text-gray-700">
                                 <span class="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-xs text-blue-600 font-bold">{{ $loop->iteration }}</span>
-                                <span>{{ $condition->getDescription() }}</span>
+                                @if($conditionUrl)
+                                    <a href="{{ $conditionUrl }}" class="hover:text-blue-600 hover:underline">{{ $condition->getDescription() }}</a>
+                                @else
+                                    <span>{{ $condition->getDescription() }}</span>
+                                @endif
                             </li>
                         @endforeach
                         @if($phase->conditions->count() > 1)
@@ -89,9 +105,26 @@
                 @else
                     <ul class="space-y-1.5">
                         @foreach($phase->actions as $action)
+                            @php
+                                $actionData = $action->action_data ?? [];
+                                $actionUrl = null;
+                                if ($action->type === 'modify_character' && $action->target_id) {
+                                    $linkedCharacter = \App\Models\Character::find($action->target_id);
+                                    $actionUrl = $linkedCharacter ? route('admin.characters.show', $linkedCharacter) : null;
+                                } elseif ($action->type === 'trigger_phase' && !empty($actionData['phase_id'])) {
+                                    $linkedPhase = \App\Models\Phase::find($actionData['phase_id']);
+                                    $actionUrl = $linkedPhase ? route('admin.phases.show', $linkedPhase) : null;
+                                } elseif ($action->type === 'send_message' && !empty($actionData['private_message_id'])) {
+                                    $actionUrl = route('admin.private-messages.show', $actionData['private_message_id']);
+                                }
+                            @endphp
                             <li class="flex items-start gap-2 text-sm text-gray-700">
                                 <span class="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-xs text-emerald-600 font-bold">{{ $loop->iteration }}</span>
-                                <span>{{ $action->getDescription() }}</span>
+                                @if($actionUrl)
+                                    <a href="{{ $actionUrl }}" class="hover:text-blue-600 hover:underline">{{ $action->getDescription() }}</a>
+                                @else
+                                    <span>{{ $action->getDescription() }}</span>
+                                @endif
                             </li>
                         @endforeach
                     </ul>
@@ -100,10 +133,7 @@
         </div>
 
         {{-- Gated content --}}
-        @php
-            $hasGated = $phase->gatedThreads->isNotEmpty() || $phase->gatedPosts->isNotEmpty() || $phase->gatedMessages->isNotEmpty();
-        @endphp
-        @if($hasGated)
+        @if($phase->gatedThreads->isNotEmpty() || $phase->gatedPosts->isNotEmpty() || $phase->gatedMessages->isNotEmpty())
             <div class="px-5 py-4 border-t border-gray-100">
                 <div class="flex items-center gap-1.5 mb-3">
                     <svg class="w-4 h-4 text-violet-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,26 +141,7 @@
                     </svg>
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Visible once this phase is complete</span>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    @foreach($phase->gatedThreads as $thread)
-                        <span class="inline-flex items-center gap-1 text-xs bg-violet-50 text-violet-800 border border-violet-200 px-2 py-1 rounded">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                            Thread: {{ $thread->title }}
-                        </span>
-                    @endforeach
-                    @foreach($phase->gatedPosts as $post)
-                        <span class="inline-flex items-center gap-1 text-xs bg-violet-50 text-violet-800 border border-violet-200 px-2 py-1 rounded">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            Post #{{ $post->id }}{{ $post->thread ? ' in "' . $post->thread->title . '"' : '' }}
-                        </span>
-                    @endforeach
-                    @foreach($phase->gatedMessages as $message)
-                        <span class="inline-flex items-center gap-1 text-xs bg-violet-50 text-violet-800 border border-violet-200 px-2 py-1 rounded">
-                            <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            Message: "{{ $message->subject }}"{{ $message->sender ? ' from ' . $message->sender->display_name : '' }}
-                        </span>
-                    @endforeach
-                </div>
+                @include('admin.phases._gated-content', ['phase' => $phase])
             </div>
         @endif
 

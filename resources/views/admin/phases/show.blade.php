@@ -118,6 +118,14 @@
                 @endif
             </div>
 
+            <!-- Gated Content -->
+            @if($phase->gatedThreads->isNotEmpty() || $phase->gatedPosts->isNotEmpty() || $phase->gatedMessages->isNotEmpty())
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Visible Once Complete</h3>
+                    @include('admin.phases._gated-content', ['phase' => $phase])
+                </div>
+            @endif
+
             <!-- Child Phases -->
             @if($phase->childPhases->isNotEmpty())
                 <div class="bg-white rounded-lg shadow p-6">
@@ -169,15 +177,33 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Progress</h3>
                     <ul class="space-y-3">
                         @foreach($phase->readerProgress->sortByDesc('updated_at')->take(10) as $progress)
-                            <li class="flex items-center justify-between text-sm">
-                                <span class="text-gray-900">{{ $progress->reader->username }}</span>
-                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded
-                                    @if($progress->status === 'completed') bg-green-100 text-green-800
-                                    @elseif($progress->status === 'in_progress') bg-blue-100 text-blue-800
-                                    @else bg-gray-100 text-gray-800
-                                    @endif">
-                                    {{ ucfirst(str_replace('_', ' ', $progress->status)) }}
-                                </span>
+                            <li class="text-sm">
+                                <div class="flex items-center justify-between mb-1">
+                                    <a href="{{ route('admin.readers.show', $progress->reader) }}" class="text-gray-900 hover:text-blue-600 hover:underline font-medium">{{ $progress->reader->username }}</a>
+                                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded
+                                        @if($progress->status === 'completed') bg-green-100 text-green-800
+                                        @elseif($progress->status === 'in_progress') bg-blue-100 text-blue-800
+                                        @else bg-gray-100 text-gray-800
+                                        @endif">
+                                        {{ ucfirst(str_replace('_', ' ', $progress->status)) }}
+                                    </span>
+                                </div>
+                                <div class="flex gap-1">
+                                    @if($progress->status !== 'completed')
+                                        <form action="{{ route('admin.phases.progress.complete', [$phase, $progress->reader]) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" class="text-xs bg-green-100 text-green-700 hover:bg-green-200 px-2 py-0.5 rounded">
+                                                ✓ Complete
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <form action="{{ route('admin.phases.progress.reset', [$phase, $progress->reader]) }}" method="POST" class="inline" onsubmit="return confirm('Reset {{ $progress->reader->username }}\'s progress on this phase?')">
+                                        @csrf
+                                        <button type="submit" class="text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 px-2 py-0.5 rounded">
+                                            ↺ Reset
+                                        </button>
+                                    </form>
+                                </div>
                             </li>
                         @endforeach
                     </ul>

@@ -33,11 +33,6 @@ class Thread extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function phase(): BelongsTo
-    {
-        return $this->belongsTo(Phase::class);
-    }
-
     public function author(): BelongsTo
     {
         return $this->belongsTo(Character::class, 'author_id');
@@ -55,16 +50,25 @@ class Thread extends Model
 
     public function firstPost()
     {
+        if ($this->relationLoaded('posts')) {
+            return $this->posts->sortBy('fake_created_at')->first();
+        }
         return $this->posts()->oldest('fake_created_at')->first();
     }
 
     public function lastPost()
     {
+        if ($this->relationLoaded('posts')) {
+            return $this->posts->sortByDesc('fake_created_at')->first();
+        }
         return $this->posts()->latest('fake_created_at')->first();
     }
 
     public function replyCount(): int
     {
+        if ($this->relationLoaded('posts')) {
+            return max(0, $this->posts->count() - 1);
+        }
         return $this->posts()->count() - 1; // Exclude the first post
     }
 }

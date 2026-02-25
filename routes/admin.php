@@ -35,6 +35,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('private-messages', PrivateMessageController::class);
     Route::resource('readers', ReaderController::class)->only(['index', 'show', 'destroy']);
     Route::get('phases/timeline', [PhaseController::class, 'timeline'])->name('phases.timeline');
+    Route::post('phases/{phase}/progress/{reader}/complete', [PhaseController::class, 'progressComplete'])->name('phases.progress.complete');
+    Route::post('phases/{phase}/progress/{reader}/reset', [PhaseController::class, 'progressReset'])->name('phases.progress.reset');
     Route::resource('phases', PhaseController::class);
     Route::resource('users', UserController::class)->except(['show']);
 

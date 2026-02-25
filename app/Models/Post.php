@@ -45,11 +45,6 @@ class Post extends Model
         return $this->hasMany(Attachment::class);
     }
 
-    public function phase(): BelongsTo
-    {
-        return $this->belongsTo(Phase::class);
-    }
-
     public function choice(): HasOne
     {
         return $this->hasOne(Choice::class, 'trigger_post_id');

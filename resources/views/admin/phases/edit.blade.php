@@ -370,7 +370,7 @@
             ];
 
             if ($a->type === 'send_message' && !empty($a->action_data['private_message_id'])) {
-                $msg = \App\Models\PrivateMessage::find($a->action_data['private_message_id']);
+                $msg = $linkedMessages->get($a->action_data['private_message_id']);
                 if ($msg) {
                     $data['existing_private_message_id'] = (string) $msg->id;
                     $data['msg_subject'] = $msg->subject ?? '';

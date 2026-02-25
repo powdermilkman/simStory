@@ -13,6 +13,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Choices Made</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions Taken</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phases</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -38,6 +39,11 @@
                                 {{ $reader->actions_count }} actions
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                {{ $reader->phases_completed_count }} completed
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $reader->created_at->format('M j, Y') }}
                         </td>
@@ -52,7 +58,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                             No readers have signed up yet.
                         </td>
                     </tr>
