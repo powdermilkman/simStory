@@ -58,7 +58,7 @@ class ThreadController extends Controller
         ]);
 
         // Update character post count
-        Character::find($validated['author_id'])->updatePostCount();
+        Character::find($validated['author_id'])?->updatePostCount();
 
         return redirect()->route('admin.threads.show', $thread)
             ->with('success', 'Thread created successfully.');

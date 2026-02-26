@@ -40,7 +40,7 @@ trait HasConditionalVisibility
 
         return $query->where(function ($q) use ($startedPhaseIds) {
             $q->whereNull('phase_id')
-              ->orWhereIn('phase_id', $startedPhaseIds ?: [0]);
+              ->orWhereIn('phase_id', $startedPhaseIds);
         });
     }
 }

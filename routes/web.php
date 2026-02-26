@@ -22,7 +22,7 @@ Route::name('forum.')->group(function () {
 Route::prefix('reader')->name('reader.')->group(function () {
     Route::middleware('guest:reader')->group(function () {
         Route::get('/login', [ReaderAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [ReaderAuthController::class, 'login']);
+        Route::post('/login', [ReaderAuthController::class, 'login'])->middleware('throttle:6,1');
         Route::get('/register', [ReaderAuthController::class, 'showRegister'])->name('register');
         Route::post('/register', [ReaderAuthController::class, 'register']);
     });

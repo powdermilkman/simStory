@@ -14,11 +14,6 @@ class ReaderChoiceController extends Controller
     {
         $reader = Auth::guard('reader')->user();
 
-        // Check if reader has already made this choice
-        if ($reader->hasCompletedChoice($choice)) {
-            return back()->with('error', 'You have already made this choice.');
-        }
-
         $validated = $request->validate([
             'option_id' => 'required|exists:choice_options,id',
         ]);
@@ -29,12 +24,15 @@ class ReaderChoiceController extends Controller
             return back()->with('error', 'Invalid option selected.');
         }
 
-        // Record the choice
-        ReaderProgress::create([
-            'reader_id' => $reader->id,
-            'choice_option_id' => $option->id,
-            'chosen_at' => now(),
-        ]);
+        // Atomically record the choice — prevents duplicates from race conditions
+        $progress = ReaderProgress::firstOrCreate(
+            ['reader_id' => $reader->id, 'choice_option_id' => $option->id],
+            ['chosen_at' => now()]
+        );
+
+        if (!$progress->wasRecentlyCreated) {
+            return back()->with('error', 'You have already made this choice.');
+        }
 
         // Clear visibility cache so new content becomes visible
         $reader->clearVisibilityCache();

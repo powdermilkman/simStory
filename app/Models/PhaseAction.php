@@ -68,16 +68,26 @@ class PhaseAction extends Model
             return;
         }
 
-        // Clone the template message for this reader
-        PrivateMessage::create([
-            'sender_id' => $template->sender_id,
-            'recipient_id' => $template->recipient_id,
-            'subject' => $template->subject,
-            'content' => $template->content,
-            'is_inbox_message' => true,
-            'is_read' => false,
-            'fake_sent_at' => now(),
-        ]);
+        // One inbox message per action — deduplicate so multiple readers completing
+        // the same phase don't create duplicate messages.
+        $alreadyExists = PrivateMessage::where('is_inbox_message', true)
+            ->where('phase_id', $this->phase_id)
+            ->where('sender_id', $template->sender_id)
+            ->where('subject', $template->subject)
+            ->exists();
+
+        if (!$alreadyExists) {
+            PrivateMessage::create([
+                'sender_id'        => $template->sender_id,
+                'recipient_id'     => $template->recipient_id,
+                'subject'          => $template->subject,
+                'content'          => $template->content,
+                'is_inbox_message' => true,
+                'is_read'          => false,
+                'fake_sent_at'     => $template->fake_sent_at ?? now(),
+                'phase_id'         => $this->phase_id,
+            ]);
+        }
     }
 
     protected function executeTriggerPhase(Reader $reader): void

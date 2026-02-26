@@ -282,6 +282,11 @@ class PhaseController extends Controller
         }
 
         $msgData = $actionData['action_data'] ?? [];
+
+        if (empty($msgData['sender_id'])) {
+            return $actionData; // Can't create a message without a sender
+        }
+
         $existingId = !empty($msgData['existing_private_message_id']) ? (int) $msgData['existing_private_message_id'] : null;
 
         $messageFields = [

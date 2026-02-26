@@ -16,6 +16,7 @@ class PhaseProgressService
                 $q->where('reader_id', $reader->id)
                     ->where('status', ReaderPhaseProgress::STATUS_COMPLETED);
             })
+            ->with(['parentPhase', 'conditions', 'actions'])
             ->orderBy('sort_order')
             ->get();
 

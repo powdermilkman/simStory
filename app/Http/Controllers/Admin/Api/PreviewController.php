@@ -42,10 +42,10 @@ class PreviewController extends Controller
 
             // Set preview values
             $post->fake_created_at = !empty($validated['fake_created_at'])
-                ? now()->parse($validated['fake_created_at'])
+                ? \Carbon\Carbon::parse($validated['fake_created_at'])
                 : now();
             $post->fake_edited_at = !empty($validated['fake_edited_at'])
-                ? now()->parse($validated['fake_edited_at'])
+                ? \Carbon\Carbon::parse($validated['fake_edited_at'])
                 : null;
 
             // Render the post card with preview content

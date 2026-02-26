@@ -55,6 +55,8 @@ class AuthController extends Controller
 
         Auth::guard('reader')->login($reader);
 
+        $request->session()->regenerate();
+
         return redirect(route('forum.index'));
     }
 

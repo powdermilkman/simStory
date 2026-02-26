@@ -88,7 +88,7 @@ class Phase extends Model
 
         // Check if parent phase (if any) is complete
         if ($this->parent_phase_id) {
-            if (!$this->parentPhase->isCompletedBy($reader)) {
+            if (!$this->parentPhase || !$this->parentPhase->isCompletedBy($reader)) {
                 return false;
             }
         }

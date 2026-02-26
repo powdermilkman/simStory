@@ -62,7 +62,7 @@ class PostController extends Controller
         ]);
 
         // Update character post count
-        Character::find($validated['author_id'])->updatePostCount();
+        Character::find($validated['author_id'])?->updatePostCount();
 
         // Handle choice/poll
         $this->syncChoice($post, $validated);
@@ -120,8 +120,8 @@ class PostController extends Controller
 
         // Update post counts if author changed
         if ($oldAuthorId != $validated['author_id']) {
-            Character::find($oldAuthorId)->updatePostCount();
-            Character::find($validated['author_id'])->updatePostCount();
+            Character::find($oldAuthorId)?->updatePostCount();
+            Character::find($validated['author_id'])?->updatePostCount();
         }
 
         // Handle choice/poll
@@ -139,7 +139,7 @@ class PostController extends Controller
         $post->delete();
 
         // Update character post count
-        Character::find($authorId)->updatePostCount();
+        Character::find($authorId)?->updatePostCount();
 
         return redirect()->route('admin.threads.show', $thread)
             ->with('success', 'Post deleted successfully.');

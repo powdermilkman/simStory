@@ -76,6 +76,7 @@ class ForumController extends Controller
 
         $threads = $category->threads()
             ->with(['author.role', 'posts'])
+            ->withCount(['posts as visible_post_count' => fn($q) => $q->visibleTo($reader)])
             ->visibleTo($reader)
             ->orderByDesc('is_pinned')
             ->orderByDesc('fake_created_at')
@@ -86,25 +87,23 @@ class ForumController extends Controller
         $threadVisiblePostCounts = [];
 
         foreach ($threads as $thread) {
-            // Base query for visible posts only
-            $visiblePostsQuery = $thread->posts()->visibleTo($reader);
-
-            // Count visible posts for reply count display
-            $threadVisiblePostCounts[$thread->id] = $visiblePostsQuery->count();
+            // visible_post_count resolved via withCount — no extra query per thread
+            $threadVisiblePostCounts[$thread->id] = $thread->visible_post_count;
 
             if ($reader) {
                 $lastVisit = $reader->getLastVisit('thread', $thread->id);
                 $lastVisitTime = $lastVisit?->last_visited_at;
 
                 if ($lastVisitTime) {
-                    $newPostCount = (clone $visiblePostsQuery)
+                    $newPostCount = $thread->posts()
+                        ->visibleTo($reader)
                         ->where('created_at', '>', $lastVisitTime)
                         ->count();
 
                     $threadNewCounts[$thread->id] = $newPostCount;
                 } else {
                     // Never visited - all visible posts are new
-                    $threadNewCounts[$thread->id] = $threadVisiblePostCounts[$thread->id];
+                    $threadNewCounts[$thread->id] = $thread->visible_post_count;
                 }
             }
         }
